@@ -1,0 +1,1354 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>캠페인 실습 노트</title>
+<meta name="description" content="3-2 캠페인 기획 실습 · 3-1 프로모션 기획 실습 워크시트 ①~⑪을 입력하고 모범답안과 비교하는 실습 앱">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Nanum+Myeongjo:wght@700;800&family=Nanum+Pen+Script&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  --paper:#EEF0F3; --sheet:#FFFFFF; --ink:#172230; --muted:#5A6573; --line:#D3D9E1; --line-soft:#E6EAEF;
+  --field:#F7F8FA; --focus:#2C5DA8;
+  --pen:#C0322B; --pen-bg:#FCEEEC; --hl:#FFE27A; --hl-ink:#3D3100;
+  --ok:#23734A; --ok-bg:#E3F3EA; --warn:#9A6212; --warn-bg:#FBF0DC; --bad:#B32B24; --bad-bg:#FBE6E4; --info:#2C5DA8; --info-bg:#E6EEFA;
+  --shadow:0 1px 2px rgba(23,34,48,.06),0 8px 24px -12px rgba(23,34,48,.18);
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-display:"Nanum Myeongjo","AppleMyungjo","Batang",serif;
+  --f-pen:"Nanum Pen Script","Nanum Pen","Comic Sans MS",cursive;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#10151C; --sheet:#18202A; --ink:#E4E9F0; --muted:#98A3B1; --line:#2E3946; --line-soft:#242D38;
+    --field:#1E2733; --focus:#7FA8E8;
+    --pen:#FF8479; --pen-bg:#3A1F1E; --hl:#6B5516; --hl-ink:#FFF1C2;
+    --ok:#6FD39C; --ok-bg:#16301F; --warn:#E9B560; --warn-bg:#35280F; --bad:#FF8B84; --bad-bg:#3A1C1A; --info:#8FB5EE; --info-bg:#1A2A42;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#10151C; --sheet:#18202A; --ink:#E4E9F0; --muted:#98A3B1; --line:#2E3946; --line-soft:#242D38;
+  --field:#1E2733; --focus:#7FA8E8;
+  --pen:#FF8479; --pen-bg:#3A1F1E; --hl:#6B5516; --hl-ink:#FFF1C2;
+  --ok:#6FD39C; --ok-bg:#16301F; --warn:#E9B560; --warn-bg:#35280F; --bad:#FF8B84; --bad-bg:#3A1C1A; --info:#8FB5EE; --info-bg:#1A2A42;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{overflow-x:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* 상단 */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--sheet);border-bottom:1px solid var(--line);padding-inline:16px}
+.top-in{max-width:1320px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding-block:10px}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand h1{font-family:var(--f-display);font-weight:800;font-size:19px;margin:0;letter-spacing:-.01em}
+.brand small{color:var(--muted);font-size:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--sheet);font-weight:700}
+.who{display:flex;gap:8px;flex-wrap:wrap}
+.who label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.who input{width:120px;border:0;border-bottom:1px solid var(--line);background:transparent;padding:3px 2px;font-size:14px;color:var(--ink)}
+.who input:focus{outline:none;border-bottom-color:var(--focus)}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ink);background:var(--ink);color:var(--sheet);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;line-height:1.3;text-align:left}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.danger.armed{border-color:var(--bad);color:var(--bad);background:var(--bad-bg)}
+.btn-pen{border-color:var(--pen);background:transparent;color:var(--pen)}
+.btn-pen[aria-pressed="true"]{background:var(--pen);color:var(--sheet)}
+.btn-pen .pen-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+
+.export{max-width:1320px;margin:0 auto;padding-block:0 12px;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.export .box{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--field)}
+.export .box p{margin:0;font-size:13px;color:var(--muted)}
+.export textarea{width:100%;min-height:64px;border:1px solid var(--line);border-radius:6px;background:var(--sheet);padding:8px;font-family:var(--f-mono);font-size:11px}
+.export .row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* 레이아웃 */
+.wrap{max-width:1320px;margin:0 auto;padding-inline:16px;padding-block:20px 60px;display:grid;grid-template-columns:260px minmax(0,1fr);gap:24px;align-items:start}
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);display:flex;flex-direction:column;gap:14px}
+.case{display:flex;flex-direction:column;gap:2px;padding:14px;border-radius:10px;background:var(--ink);color:var(--sheet)}
+.case-code{font-size:11px;letter-spacing:.08em;opacity:.7}
+.case strong{font-family:var(--f-display);font-size:22px;font-weight:800;line-height:1.25}
+.case span:last-child{font-size:12px;opacity:.8;line-height:1.45}
+#overall{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+#nav{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.nav-item{width:100%;display:grid;grid-template-columns:26px 1fr;grid-template-rows:auto 3px;column-gap:6px;row-gap:5px;align-items:center;border:0;background:transparent;text-align:left;padding:7px 8px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:13.5px}
+.nav-item:hover{background:var(--sheet)}
+.nav-item.cur{background:var(--sheet);color:var(--ink);font-weight:700;box-shadow:var(--shadow)}
+.nav-no{font-size:16px;grid-row:1/3;align-self:start;color:var(--ink)}
+.nav-st{grid-column:2;height:3px;border-radius:2px;background:var(--line-soft);overflow:hidden;display:block}
+.nav-st span{display:block;height:100%;background:var(--muted)}
+.nav-st.st-done span{background:var(--ok)}
+.side-foot{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
+
+/* 시트 */
+main{min-width:0;outline:none}
+.sheet{background:var(--sheet);border-radius:12px;box-shadow:var(--shadow);padding:28px clamp(16px,3vw,40px) 32px}
+.sheet-head{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:22px;display:flex;flex-direction:column;gap:6px}
+.sheet-eyebrow{margin:0;font-size:12px;letter-spacing:.14em;color:var(--muted);font-weight:700}
+.sheet-head h2{font-family:var(--f-display);font-weight:800;font-size:clamp(24px,3vw,32px);margin:0;line-height:1.2;text-wrap:balance}
+.lead{margin:0;color:var(--ink);max-width:68ch}
+.byline{margin:6px 0 0;font-size:13px;color:var(--muted)}
+.byline u{text-decoration:none;border-bottom:1px solid var(--muted);color:var(--ink);padding:0 6px;margin-right:14px;display:inline-block;min-width:8em}
+.sheet-tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.blocks{display:flex;flex-direction:column;gap:22px}
+.note{align-self:flex-start;font-size:14px;color:var(--hl-ink);margin:0;background:var(--hl);display:block;padding:8px 12px;border-radius:6px}
+
+/* 입력 */
+.field{display:flex;flex-direction:column;gap:6px}
+.field-short{max-width:420px}
+.field label{font-weight:700;font-size:14px}
+.hint{font-size:12px;color:var(--muted);margin-top:-4px}
+.q label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.qmark{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--sheet);display:grid;place-items:center;font-size:12px;font-family:var(--f-mono)}
+textarea,input,select{width:100%;border:1px solid var(--line);background:var(--field);border-radius:6px;padding:8px 10px;font-size:14px;line-height:1.55;resize:vertical}
+textarea{min-height:44px;overflow:hidden}
+select{padding:7px 8px;cursor:pointer}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--focus);background:var(--sheet);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 18%,transparent)}
+input.n{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+.inwrap{position:relative;display:block}
+.inwrap.pct input{padding-right:24px}
+.inwrap.pct::after{content:"%";position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
+
+/* 모범답안 — 빨간펜 */
+.ans{display:none;font-family:var(--f-pen);color:var(--pen);font-size:21px;line-height:1.2;padding:4px 2px 0 22px;position:relative;letter-spacing:.01em}
+.ans::before{content:"✓";position:absolute;left:2px;top:3px;font-family:var(--f-body);font-size:13px;font-weight:700}
+.show-ans .ans{display:block}
+td .ans{font-size:19px}
+
+/* 표 */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+.sheet-table table{border-collapse:collapse;width:100%;min-width:640px}
+.sheet-table th,.sheet-table td{border:1px solid var(--line);padding:8px;vertical-align:top;text-align:left}
+.sheet-table thead th{background:var(--ink);color:var(--sheet);font-size:12.5px;font-weight:700;letter-spacing:.02em;padding:8px 10px}
+.sheet-table tbody th{background:var(--field);font-size:13.5px;font-weight:700;width:150px;min-width:110px}
+.sheet-table td textarea,.sheet-table td input,.sheet-table td select{background:transparent;border-color:transparent;padding:4px 6px}
+.sheet-table td textarea:focus,.sheet-table td input:focus,.sheet-table td select:focus{border-color:var(--focus);background:var(--sheet)}
+.sheet-table td select{border-color:var(--line)}
+.sheet-table td.col-area{min-width:200px}
+.sheet-table td.col-text{min-width:150px}
+.sheet-table td.col-num,.sheet-table td.col-pct{width:110px;min-width:96px}
+.sheet-table td.col-pick{width:110px;min-width:96px}
+
+/* 자동 점검 */
+.calc{border:1px dashed var(--line);border-radius:10px;padding:14px 16px;background:var(--field);display:flex;flex-direction:column;gap:10px}
+.calc h4{margin:0;font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700}
+.calc-body{display:flex;flex-direction:column;gap:12px}
+.calc-sub{margin:0;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.muted{color:var(--muted);margin:0;font-size:13px}
+.chks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.chk .dot{flex:none;width:10px;height:10px;border-radius:50%;margin-top:7px;background:var(--line)}
+.chk-ok .dot{background:var(--ok)} .chk-warn .dot{background:var(--warn)} .chk-bad .dot{background:var(--bad)} .chk-info .dot{background:var(--info)}
+.chk-bad{color:var(--bad)}
+.chip{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;font-weight:500;line-height:1.6}
+.chip-ok{background:var(--ok-bg);color:var(--ok)} .chip-info{background:var(--info-bg);color:var(--info)} .chip-bad{background:var(--bad-bg);color:var(--bad)} .chip-warn{background:var(--warn-bg);color:var(--warn)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.stat{background:var(--sheet);border:1px solid var(--line-soft);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--f-mono);font-size:20px;font-variant-numeric:tabular-nums;line-height:1.3}
+.stat b small{font-size:13px;color:var(--muted);font-weight:500}
+.stat span{font-size:12px;color:var(--muted);line-height:1.4}
+.bars{display:flex;flex-direction:column;gap:6px}
+.bar-row{display:grid;grid-template-columns:minmax(90px,180px) 1fr 64px;gap:10px;align-items:center;font-size:13px}
+.bar-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{height:10px;background:var(--line-soft);border-radius:3px;overflow:hidden}
+.bar-fill{display:block;height:100%;background:var(--ink);border-radius:3px;transition:width .25s}
+.bar-fill.off{background:var(--muted);opacity:.5}
+.bar-val{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+table.mini{border-collapse:collapse;width:100%;font-size:13px;min-width:380px}
+table.mini th,table.mini td{padding:5px 8px;border-bottom:1px solid var(--line-soft);text-align:left}
+table.mini th{font-size:12px;color:var(--muted);font-weight:500}
+table.mini .n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+table.mini tr.sum td{font-weight:700;border-top:1.5px solid var(--ink);border-bottom:0}
+table.mini .up{color:var(--ok)} table.mini .down{color:var(--bad)}
+table.heat{border-collapse:collapse;font-size:12.5px;min-width:420px}
+table.heat th,table.heat td{padding:4px 10px;text-align:center}
+table.heat tbody th{text-align:left;font-weight:500}
+table.heat td{color:var(--line)} table.heat td.on{color:var(--ink)}
+svg.emo{width:100%;max-width:560px;height:auto;display:block;min-width:360px}
+svg.emo .grid{stroke:var(--line);stroke-dasharray:3 4}
+svg.emo .axis{fill:var(--muted);font-size:12px;font-family:var(--f-body)}
+svg.emo .curve{stroke:var(--ink);stroke-width:2.5}
+svg.emo .pt{fill:var(--sheet);stroke:var(--ink);stroke-width:2.5}
+svg.emo .pt.low{fill:var(--pen);stroke:var(--pen)}
+.readaloud{font-size:15.5px;line-height:1.85;max-width:72ch;margin:0}
+.ra{padding:1px 0}
+.ra-0{box-shadow:inset 0 -2px var(--bad)} .ra-1{box-shadow:inset 0 -2px var(--info)} .ra-2{box-shadow:inset 0 -2px var(--ok)} .ra-3{box-shadow:inset 0 -2px var(--warn)}
+.ra-empty{color:var(--muted);font-size:13px}
+.poster{border:2px solid var(--ink);border-radius:4px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;background:var(--sheet)}
+.poster-eyebrow{font-size:11px;letter-spacing:.14em;color:var(--muted)}
+.poster strong{font-family:var(--f-display);font-size:30px;font-weight:800;line-height:1.2}
+.poster em{font-style:normal;font-size:16px}
+.draft{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--info-bg)}
+.draft p{margin:0;font-size:14px;flex:1 1 280px}
+.onepage{background:var(--sheet);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.op-head{background:var(--ink);color:var(--sheet);padding:18px 20px;display:flex;flex-direction:column;gap:2px}
+.op-eyebrow{font-size:11px;letter-spacing:.1em;opacity:.7}
+.op-head h3{font-family:var(--f-display);font-size:28px;font-weight:800;margin:0;line-height:1.25}
+.op-head p{margin:0;opacity:.9}
+.onepage dl{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.onepage dl div{padding:12px 16px;border-top:1px solid var(--line-soft);border-right:1px solid var(--line-soft)}
+.onepage dt{font-size:11.5px;font-weight:700;letter-spacing:.04em;color:var(--muted);margin-bottom:3px}
+.onepage dd{margin:0;font-size:13.5px;line-height:1.55}
+
+.pager{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:32px;padding-top:18px;border-top:1px solid var(--line)}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translate(-50%,20px);background:var(--ink);color:var(--sheet);padding:9px 16px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:calc(100% - 32px)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:14px;padding-block:12px 48px}
+  .side{position:static;min-width:0}
+  .top{position:static}
+  #nav{flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:4px;scroll-snap-type:x proximity}
+  #nav li{flex:none;scroll-snap-align:start}
+  .nav-item{width:auto;max-width:190px;background:var(--sheet);border:1px solid var(--line)}
+  .nav-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .side-foot{display:none}
+  .who input{width:96px}
+}
+@media (max-width:520px){
+  .brand small{display:none}
+  .sheet{padding:20px 14px 24px;border-radius:10px}
+  .bar-row{grid-template-columns:96px 1fr 54px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><h1>캠페인 실습 노트</h1><small>워크시트 ①~⑪ · 빨간펜 모범답안</small></div>
+    <div class="seg" role="group" aria-label="과정 선택">
+      <button type="button" data-course="campaign" aria-pressed="true">3-2 캠페인 기획</button>
+      <button type="button" data-course="promo" aria-pressed="false">3-1 프로모션 기획</button>
+    </div>
+    <div class="who">
+      <label for="team">팀명<input id="team" autocomplete="off" placeholder="3조"></label>
+      <label for="author">작성자<input id="author" autocomplete="off" placeholder="이름"></label>
+    </div>
+    <button type="button" class="btn btn-pen" data-act="answers" aria-pressed="true"><i class="pen-dot" aria-hidden="true"></i><span>모범답안 숨기기</span></button>
+    <button type="button" class="btn ghost" data-act="export" aria-expanded="false" aria-controls="exportPanel">내보내기 · 백업</button>
+  </div>
+  <div id="exportPanel" class="export" hidden>
+    <div class="box">
+      <p>과정 전체(①~⑪)를 표 형식 텍스트로 복사합니다. 카톡·노션·한글에 붙여 넣으십시오.</p>
+      <div class="row"><button type="button" class="btn" data-act="copyText">전체 내용 복사</button><button type="button" class="btn ghost" data-act="fillAll">빈 칸 전부 모범답안으로</button></div>
+      <textarea id="copyOut" hidden readonly aria-label="복사할 내용"></textarea>
+    </div>
+    <div class="box">
+      <p>작성한 내용은 이 브라우저에만 저장됩니다. 다른 기기로 옮기려면 백업 코드를 복사해 붙여 넣으십시오.</p>
+      <div class="row"><button type="button" class="btn ghost" data-act="copyCode">백업 코드 복사</button></div>
+      <textarea id="restoreIn" placeholder="여기에 백업 코드를 붙여 넣고 불러오기" aria-label="백업 코드 붙여 넣기"></textarea>
+      <div class="row"><button type="button" class="btn ghost" data-act="restore">불러오기</button></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside class="side" aria-label="워크시트 목록">
+    <div class="case" id="case"></div>
+    <span id="overall"></span>
+    <ol id="nav"></ol>
+    <p class="side-foot">막대는 칸을 채운 정도입니다. 80% 이상이면 초록색으로 바뀝니다. "가정" 표기 값은 조가 직접 확인해 바꾸십시오.</p>
+  </aside>
+  <main id="main" tabindex="-1">
+    <article class="sheet" id="app"></article>
+  </main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+/* 실습 워크시트 데이터 — 3-2 캠페인 기획 실습(동래점 모범답안) · 3-1 프로모션 기획 실습(케이스 C 모범답안)
+   블록 종류
+   - note   : 안내 문장
+   - field  : 한 칸 입력 (t: text | area | num)
+   - table  : 표. cols[0]은 고정 라벨 열, 나머지는 입력 열 (t: text | area | num | pct | pick)
+   - q      : 생각해 볼 질문 (서술형)
+   - calc   : 자동 계산 · 점검 (app.js의 CALC에서 id로 찾음)
+   - draft  : ⑩ 1페이지 초안 불러오기 버튼
+   a = 모범답안
+*/
+const COURSES = {
+  campaign: {
+    code: '3-2',
+    name: '캠페인 기획 실습',
+    caseTitle: '다시, 출근룩',
+    caseSub: '롯데백화점 동래점 · 8주 · 50대 직장인의 출근룩 캠페인',
+    caseNote: '기간 · 예산 · 목표는 조가 정한 값입니다. 가정값은 "가정"으로 표기합니다.',
+    sheets: [
+      {
+        id: 's1', no: '①', title: '캠페인 목표와 타깃 정의',
+        lead: '조가 정한 목표 유형(고객층 확보 / 인지도)을 우리 캠페인의 언어로 다시 쓰고, 타깃을 좁히십시오.',
+        blocks: [
+          { type: 'table', id: 'goals', cols: [
+              { h: '목표 유형' }, { h: '목표 (조가 정함)', t: 'text' }, { h: '우리 캠페인의 목표 문장', t: 'area' },
+              { h: '작년 실적 대비', t: 'area' }, { h: '주 / 부', t: 'pick', opts: ['주', '부'] }],
+            rows: [
+              { l: '신규 고객 확보', a: ['50대 이상 신규 앱 회원 1,500명', '8주간 동래·금정·연제 50대 직장인이 출근룩 3벌 피팅을 예약(=앱 가입 + 스타일 카드)하게 해 50대 이상 신규 회원 1,500명을 확보한다', '— (점포 비공개 · 50대 앱 가입은 집계 없음)', '주'] },
+              { l: '인지도 확대', a: ['반경 1.5km 단지 인지도 40%', "럭키아파트 등 반경 1.5km 대단지 주민 설문에서 '동래점 다시, 출근룩'을 아는 비율 40%", '— (신규 측정 · 설문 300명 가정)', ''] },
+              { l: '매출 증대', a: ['남성복 매출 +15%', '피팅 후 원하는 것만 사는 구조로 남성복·잡화 매출을 전년 동기 대비 15% 늘린다 (2025 상반기 −14.3% 회복)', '2025 상반기 −14.3% (패션비즈)', '부'] },
+              { l: '고객 만족', a: ['만족도 85% 이상', '피팅 이용자 대상 "내 나이·체형을 알고 골라 준 것 같았나" 85% 이상', '— (신규 측정 항목)', ''] },
+            ] },
+          { type: 'calc', id: 'mainSub' },
+          { type: 'field', id: 'goalNum', t: 'num', label: '주 목표 수치 (명)', hint: '⑦ 운영 · ⑧ 예산 · ⑨ KPI 계산에 그대로 쓰입니다.', a: '1500' },
+          { type: 'table', id: 'seg', cols: [{ h: '타깃 세분화' }, { h: '세그먼트 A', t: 'area' }, { h: '세그먼트 B', t: 'area' }],
+            rows: [
+              { l: '연령 · 직업', a: ['50~59세 남성 직장인 · 동래·금정·연제 거주 · 관리직·공공기관·자영업 20년 이상', '60~65세 · 정년 후 재취업 · 자녀 결혼식 등 행사 복장 수요'] },
+              { l: '행동 특성', a: ['옷은 아내가 사다 주거나 10년째 같은 정장 · 온라인은 사이즈 실패 경험 · 회사 복장 자율화로 뭘 입을지 모름', '살 옷은 정해져 있음(예복·코트) · 한 번에 끝내고 싶어 함 · 자녀가 동행'] },
+              { l: '백화점에 오지 않는 이유', a: ['젊은 브랜드뿐이라 내 자리가 없다고 느낌 · 젊은 점원이 부담 · "마트는 가도 백화점은 안 간다"', '가격 부담 · 어디로 가야 할지 모름'] },
+              { l: '우선순위 (1 / 2)', a: ['1순위 — 반경 1.5km 대단지에 밀집 · 아직 소득이 있고 출근이 매일이라 반복 구매로 이어짐', '2순위 — 수는 많지만 구매가 1회성(행사용)에 그침'] },
+            ] },
+          { type: 'field', id: 'persona', t: 'text', label: '대표 인물 한 줄', hint: '이름 · 나이 · 직업 · 사는 곳', a: '박정호 · 56세 · 관리직 32년차 · 동래 럭키아파트 거주' },
+          { type: 'q', id: 'why', q: '네 목표를 모두 주 목표로 삼을 수는 없습니다. 주 목표 하나와 부 목표 하나를 고른 이유는?',
+            a: "주 목표는 '신규 고객 확보'(50대 이상 앱 회원), 부 목표는 '매출 증대'입니다. 동래점은 신규 유입이 아니라 이미 옆에 사는 사람이 안 오는 점포이므로, 목표를 '먼 데서 오게 하기'가 아니라 '옆 단지 사람을 처음 들어오게 하기'로 정의했습니다." },
+        ],
+      },
+      {
+        id: 's2', no: '②', title: '고객 인사이트 도출',
+        lead: '"이런 걸 좋아할 것이다"가 아니라 "이런 상황에 있다"를 적으십시오.',
+        blocks: [
+          { type: 'note', text: '작성 형식 — "[상황]일 때 [행동]하는데 [이유] 때문에 [불만·욕구]를 느낀다"' },
+          { type: 'table', id: 'ins', cols: [{ h: 'No' }, { h: '인사이트 문장', t: 'area' }, { h: '근거 (관찰 · 데이터 · 경험)', t: 'area' }, { h: '유형', t: 'pick', opts: ['경험', '가치', '혜택'] }],
+            rows: [
+              { l: '1', a: ['회사가 복장 자율화를 해서 정장을 벗었는데, 정장 말고는 입을 옷이 없어서 결국 등산복 점퍼를 입고 출근하고, 아들한테 "아빠 그거 아니야" 소리를 듣는다.', '동래점 주 고객 = 대단지 아파트 거주 가족·중장년(나무위키) · 기업 복장 자율화 확산 · 2025 상반기 남성복 포함 점포 매출 −14.3%(패션비즈)', '혜택'] },
+              { l: '2', a: ['옷은 30년째 아내가 사다 줬는데, 요즘은 아내도 "당신 취향을 모르겠다"고 하고, 매장에 가면 젊은 점원이 젊은 옷을 권해서 "그냥 둘러볼게요" 하고 마트로 간다.', '메가마트 동래점 = 부산 대형마트 매출 1위 · 같은 블록의 동래점은 50위(ABC뉴스) — 마트는 가지만 백화점은 안 가는 동선', '경험'] },
+              { l: '3', a: ['정년이 4년 남았고 자녀 결혼식이 다가오는데, "아버지가 멋있다"는 말을 한 번은 듣고 싶지만 어디서 어떻게 시작해야 할지 모른다.', '부산은 광역시 중 첫 초고령사회(2021) · 동래·금정·연제 50대 인구 비중 (조가 행안부에서 확인)', '가치'] },
+            ] },
+          { type: 'calc', id: 'insight' },
+          { type: 'q', id: 'strong', q: '세 인사이트 중 가장 강한 것과 그 이유',
+            a: "1번입니다. '정장을 벗으니 입을 옷이 없다'는 지금 매일 아침 일어나는 일이고, 그 답(내 나이·체형에 맞게 3벌 골라 입어 보기)은 온라인도 마트도 못 하고 백화점만 할 수 있습니다. 2·3번은 1번을 풀면 같이 풀립니다." },
+          { type: 'q', id: 'untouched', q: '경쟁사가 아직 건드리지 않은 인사이트',
+            a: "2번, 즉 '마트는 가도 백화점은 안 간다'입니다. 경쟁점(신세계 센텀)은 멀고 젊습니다. 같은 블록의 마트에서 장 보고 10걸음 안에 들어와 얼굴 아는 코디를 만나는 것은 동래점만 할 수 있는 일이라, 우리가 먼저 가져갈 수 있습니다." },
+        ],
+      },
+      {
+        id: 's3', no: '③', title: '캠페인명과 슬로건 개발',
+        lead: '인사이트 → 브랜드가 줄 것 → 고객의 변화 → 한 문장 순서로 만드십시오.',
+        blocks: [
+          { type: 'table', id: 'steps', cols: [{ h: '단계' }, { h: '작성란', t: 'area' }],
+            rows: [
+              { l: '1. 선택한 고객 인사이트', a: ['복장 자율화로 정장을 벗으니 입을 옷이 없다 — 옷이 아니라 내 나이·체형·회사를 알고 골라 줄 사람이 없다'] },
+              { l: '2. 브랜드가 줄 수 있는 것', a: ['8주간 남성복 층 스타일 라운지 — 코디가 3벌을 골라 주고 입어 본 뒤 원하는 것만 산다 · 스타일 카드 · 30일 코디 보장 · 기장·허리 수선 무료 · 배우자·자녀 동반'] },
+              { l: '3. 고객이 얻는 변화', a: ['월요일 아침 옷장 앞이 편해진다 — 골라 준 대로 입고 나가고, 아들에게 "아빠 오늘 괜찮네"를 듣는다. 다음엔 설명 없이 "지난번 그 핏으로"'] },
+            ] },
+          { type: 'table', id: 'opts', cols: [{ h: '안' }, { h: '캠페인명', t: 'text' }, { h: '슬로건', t: 'text' }, { h: '이 안의 강점', t: 'area' }, { h: '우려되는 점', t: 'area' }],
+            rows: [
+              { l: 'A', a: ['다시, 출근룩', '오래 본 이웃이 압니다, 당신 스타일', "'다시'가 정장을 벗은 사람의 상황을 정확히 건드리고, '오래 본 이웃'이 동래점의 위치(30년 동네 백화점)를 그대로 말합니다. 봄에도 '다시, 봄 출근룩'으로 반복됩니다", "'이웃'이라는 약속을 못 지키면(코디가 카드를 안 보면) 역효과 — 스타일 카드 운영이 조건입니다"] },
+              { l: 'B', a: ['정장 벗고, 동래로', '월요일이 편해지는 옷', '행동 지시가 분명하고 지역명이 들어가 아파트 게시판에서 눈에 띕니다', "'정장 벗고'가 복장 자율화가 아닌 회사에는 안 맞고, 행사 안내처럼 들려 남는 가치가 약합니다"] },
+              { l: 'C', a: ['아버지의 가을 출근룩', '아빠, 옷 사러 가요', '자녀가 부모에게 보내는 메시지라 인스타·카톡 공유가 쉽고 감정이 있습니다', "고객 본인이 아니라 자녀에게 말하는 문장이라 당사자가 '나를 늙은이 취급한다'고 느낄 수 있습니다"] },
+            ] },
+          { type: 'table', id: 'crit', cols: [{ h: '점검 기준' }, { h: '선택안이 충족하는가', t: 'pick', opts: ['충족', '보완 필요'] }],
+            rows: [{ l: '간결한가', a: ['충족'] }, { l: '기억하기 쉬운가', a: ['충족'] }, { l: '감성을 자극하는가', a: ['충족'] }, { l: '브랜드와 연결되는가', a: ['충족'] }] },
+          { type: 'field', id: 'pick', t: 'pick', opts: ['A', 'B', 'C'], label: '최종 선택안', a: 'A' },
+          { type: 'field', id: 'keep', t: 'text', label: '남길 문장 (모든 채널에서 반복할 한 문장)', hint: '⑥ IMC 여정에서 이 문장의 핵심어가 단계마다 이어지는지 점검합니다.', a: '오래 본 이웃이 압니다, 당신 스타일' },
+          { type: 'calc', id: 'slogan' },
+          { type: 'q', id: 'reason', q: '최종 선택안과 이유',
+            a: "A안 '다시, 출근룩 — 오래 본 이웃이 압니다, 당신 스타일'. C안의 '아빠, 옷 사러 가요'는 버리지 않고 자녀용 카톡·인스타 문구로 씁니다. 우산 슬로건 '가을의 모든 순간을 롯데에서'는 그 위에 둡니다. 아파트 게시물에는 '#다시출근룩 · 동래점'으로 표기합니다." },
+        ],
+      },
+      {
+        id: 's4', no: '④', title: '브랜드 스토리텔링 설계',
+        lead: '네 칸이 하나의 이야기로 이어지는지 소리 내어 읽어 확인하십시오.',
+        blocks: [
+          { type: 'field', id: 'p1', t: 'area', label: '① 문제', hint: '고객이 직면한 현실적 또는 심리적 문제', a: '동래 럭키아파트에 사는 56세 박정호. 회사가 복장 자율화를 하면서 10년 입은 정장을 벗었는데, 정장 말고는 입을 옷이 없습니다. 아내도 "당신 취향을 모르겠다"고 하고, 매장은 젊은 옷뿐입니다. 옷이 없는 게 아니라, 내 스타일을 아는 사람이 없는 것입니다.' },
+          { type: 'field', id: 'p2', t: 'area', label: '② 해결', hint: '브랜드가 제공하는 구체적 솔루션', a: "8주간 동래점 남성복 층에 '스타일 라운지'를 엽니다. 아파트 게시판이나 카톡으로 예약하면 코디가 회사 분위기·체형·예산을 묻고 3벌을 골라 둡니다. 배우자나 자녀와 같이 와도 됩니다. 입어 보고 원하는 것만 삽니다. 기장·허리 수선은 무료, 안 맞으면 30일 안에 다시 골라 드리고, 스타일 카드는 앱과 종이 둘 다 남깁니다." },
+          { type: 'field', id: 'p3', t: 'area', label: '③ 고객 경험', hint: '문제 해결로 얻게 되는 긍정적 변화', a: '월요일 아침, 옷장 앞이 편해집니다. 골라 준 대로 입고 나가니 회사에서 "부장님 오늘 다르시네요"를 듣고, 아들이 "아빠 괜찮네"라고 합니다. 2월에 다시 오면 처음부터 설명하지 않아도 됩니다 — "지난번 그 핏으로 봄 것 보여 드릴게요." 자녀 결혼식 예복도 같은 코디가 봅니다.' },
+          { type: 'field', id: 'p4', t: 'area', label: '④ 브랜드 가치', hint: '이 과정에서 드러나는 브랜드의 가치', a: '동래점은 옷을 파는 곳이 아니라, 오래 본 이웃처럼 내 스타일을 아는 곳입니다. 온라인은 사이즈만 알고 젊은 매장은 묻지 않습니다. 30년 동네 백화점이 이웃의 스타일을 기억하고 다음에 이어 주는 것 — 그것이 남은 시간 동안 동래점이 이 동네와 관계 맺는 방식입니다.' },
+          { type: 'calc', id: 'story' },
+        ],
+      },
+      {
+        id: 's5', no: '⑤', title: '채널 믹스 설계',
+        lead: '채널마다 역할을 하나씩 정하십시오. 모든 채널이 모든 일을 할 수는 없습니다.',
+        blocks: [
+          { type: 'table', id: 'ch', cols: [{ h: '채널' }, { h: '사용', t: 'pick', opts: ['사용', '미사용'] }, { h: '역할 (인지/관심/행동/전환)', t: 'text' }, { h: '주요 콘텐츠', t: 'area' }, { h: '예산 비중', t: 'pct' }, { h: '목표 도달 · 성과', t: 'area' }],
+            rows: [
+              { l: '인스타그램 · 릴스', a: ['사용', '인지 (자녀 경유)', "자녀용 릴스 '아빠, 옷 사러 가요' — 아버지 3벌 피팅 30초 · 카톡으로 부모에게 보내기 버튼", '5', '타깃 본인이 아닌 자녀 도달 · 공유 3,000건 (가정)'] },
+              { l: '유튜브 · 숏폼', a: ['미사용', '—', '미사용', '0', '50대 남성 도달은 되나 예약 전환이 없어 제외'] },
+              { l: '틱톡', a: ['미사용', '—', '미사용', '0', '타깃과 무관'] },
+              { l: '아파트 게시판 · 엘리베이터 (인플루언서 대체)', a: ['사용', '인지 · 관심', '반경 1.5km 대단지 12곳 게시판·엘리베이터 광고 · 관리사무소 안내방송 · 경로당·부녀회 안내', '30', '단지 세대 약 2만(조가 확인) · 인지도 40% 목표'] },
+              { l: '라이브커머스', a: ['미사용', '—', '미사용', '0', '온라인 실패 경험이 있는 타깃이라 목표와 어긋남'] },
+              { l: '카톡 채널 · 밴드 · 문자 · 앱', a: ['사용', '관심 · 전환', '동래점 카톡 채널 예약 · 네이버 밴드(아파트 커뮤니티) · 기존 문화센터 회원 문자 · 앱 스타일 카드 저장', '15', '예약 800건 · 카드 발급 1,500건'] },
+              { l: '오프라인 (라운지 · 마트 · 문화센터)', a: ['사용', '행동 · 전환', '남성복 층 스타일 라운지 40평 + 수선실 · 메가마트·롯데마트 영수증 쿠폰 · 롯데문화센터 "정장 벗은 남자의 옷" 특강 4회', '50', '라운지 방문 3,000명 · 구매 800건 · 특강 200명'] },
+            ] },
+          { type: 'calc', id: 'channel' },
+          { type: 'field', id: 'hh', t: 'num', label: '반경 1.5km 대단지 세대수', hint: '조가 행안부·아파트 관리사무소에서 확인 (가정)', a: '20000' },
+          { type: 'field', id: 'aw', t: 'num', label: '인지도 목표 (%)', a: '40' },
+          { type: 'calc', id: 'households' },
+          { type: 'q', id: 'q1', q: '인스타·유튜브에 예산을 배정했다면, 그 채널이 50대 본인에게 닿습니까?',
+            a: '인스타 5%는 50대 본인이 아니라 자녀에게 보내는 예산입니다 — 자녀가 부모에게 카톡으로 전달하는 구조라 역할을 "공유"로 한정했습니다. 50대 본인에게는 아파트 게시판·엘리베이터·마트·문화센터가 닿습니다.' },
+          { type: 'q', id: 'q2', q: '인플루언서 예산은 몇 %로 두었고, 그 이유는?',
+            a: '인플루언서 예산 0%. 2안(부산본점)은 인플루언서 20%가 필요했지만, 동래점 타깃은 반경 1.5km 안에 모여 살아 도달이 문제가 아니라 "들어올 이유"가 문제입니다. 그래서 인플루언서 몫을 아파트 매체 30%와 마트·문화센터 연계로 옮겼습니다.' },
+        ],
+      },
+      {
+        id: 's6', no: '⑥', title: 'IMC 고객 여정 설계',
+        lead: '일곱 단계에서 같은 메시지가 유지되는지 확인하는 것이 이 실습의 목적입니다.',
+        blocks: [
+          { type: 'table', id: 'imc', cols: [{ h: '단계' }, { h: '채널 · 접점', t: 'area' }, { h: '이 단계에서 전달할 메시지', t: 'area' }, { h: '고객이 하는 행동', t: 'area' }, { h: '다음 단계로 넘기는 장치', t: 'area' }],
+            rows: [
+              { l: '1. 동네 인지 (원본: SNS 인지)', a: ['아파트 게시판 · 엘리베이터 · 자녀 카톡', '정장 벗고 입을 옷 없으세요? — 오래 본 이웃이 압니다, 당신 스타일', '게시판을 보고 "나네" 하거나, 자녀가 보낸 카톡을 연다', 'QR · 카톡 채널 → 피팅 예약'] },
+              { l: '2. 홈페이지 · 앱', a: ['카톡 채널 · 앱 예약 · 전화 예약', '예약하면 코디가 당신 나이·체형에 맞춰 3벌 준비해 둡니다', '날짜·시간을 고르고 회사 분위기·체형 고민을 적는다 (전화도 됨)', '예약 완료 = 앱 회원 가입 · 스타일 카드 1차'] },
+              { l: '3. 백화점 방문', a: ['동래점 1층 입구 · 마트 연결 통로 · 명륜역', '다시, 출근룩 — 남성복 층 스타일 라운지', '장 보러 왔다가, 또는 예약 시간에 라운지로 간다', '체크인 → 코디 배정 · 3벌 준비 완료'] },
+              { l: '4. 팝업스토어 체험', a: ['스타일 라운지 · 피팅룸 · 수선실', '입어만 보세요 — 사는 건 마음에 들 때만, 수선은 무료', '3벌을 입어 보고 배우자·자녀와 같이 고른다', '원하는 것만 회원가 · 수선 접수 · 스타일 카드 완성(종이+앱)'] },
+              { l: '5. 문화센터 (원본: 라이브커머스)', a: ['롯데문화센터 특강 · 라운지 포토존', '정장 벗은 남자의 옷 — 오늘 내 스타일을 찾은 분들', '특강을 듣고, 피팅 사진을 가족 단톡에 올린다', '특강 수강 → 피팅 우선 예약 · 가족 공유'] },
+              { l: '6. 멤버십 · 포인트', a: ['앱 멤버십 · 종이 스타일 카드', '첫 회원에게는 등급을 묻지 않습니다 — 당신 스타일은 카드에 남습니다', '회원가로 결제하고 종이 카드를 지갑에 넣는다', '결제 즉시 포인트 · 30일 보장 · 12월 자녀 결혼식 예복 안내'] },
+              { l: '7. 재방문', a: ['카톡 · 문자 · 아파트 게시판', '다시, 봄 출근룩 — 2월, 지난번 그 코디가 기다립니다', '저장된 카드로 봄 피팅을 예약한다', '같은 코디 지명 · 카드 기준 3벌 사전 준비'] },
+            ] },
+          { type: 'field', id: 'kw', t: 'text', label: '반복 메시지의 핵심어 (쉼표로 구분)', hint: '③에서 정한 남길 문장에서 뽑습니다. 단계별 메시지에 하나라도 들어가는지 봅니다.', a: '이웃, 스타일, 당신, 다시' },
+          { type: 'calc', id: 'imc' },
+          { type: 'q', id: 'break', q: '일곱 단계에서 반복되는 하나의 메시지 · 어느 단계에서 끊기는가',
+            a: "반복 메시지는 '오래 본 이웃이 압니다, 당신 스타일'입니다. 일곱 단계 모두 이 말의 변주로 설계했고, 원본의 SNS·라이브커머스 단계를 타깃에 맞게 동네 인지·문화센터로 바꿨습니다. 끊기기 쉬운 곳은 2단계와 7단계입니다 — 앱 예약이 어려운 50대를 위해 전화·카톡 예약을 열어 두지 않으면 문 앞에서 끊기고, 7단계에서 코디가 카드를 안 보면 '이웃'이 거짓말이 됩니다. 코디 교육 기준: '3벌 이상 권하지 않는다 · 카드를 먼저 읽고 만난다 · 반말·존칭 실수 없음'." },
+        ],
+      },
+      {
+        id: 's7', no: '⑦', title: '운영계획 수립',
+        lead: '캠페인 기간(조가 정함 · 1~3개월) 동안 무엇을 언제 어디서 할지 정하십시오.',
+        blocks: [
+          { type: 'table', id: 'ops', cols: [{ h: '항목' }, { h: '내용', t: 'area' }, { h: '결정 근거', t: 'area' }],
+            rows: [
+              { l: '기간 · 주요 일자', a: ['10월 6일(월) ~ 11월 30일(일), 8주 · 영업시간 내 예약제 + 워크인 · 월 1회 휴점일 제외 (동래점 휴점일은 조가 확인)', '가을·겨울 환절기에 출근복 수요가 생기고, 11월 자녀 결혼식 시즌과 겹칩니다. 8주로 잡은 이유는 50대는 "다음 주에 가지"가 길기 때문입니다'] },
+              { l: '장소 · 공간 배치', a: ['남성복 층 스타일 라운지 40평(상담석 2 · 피팅룸 3 · 소파 대기석 — 배우자·자녀 동석) + 수선실 연결 + 1층 마트 연결 통로 안내 배너', '50대는 아트리움 팝업보다 남성복 매장 안에서 편안해합니다. 동반 가족이 앉을 자리가 있어야 "같이 가자"가 됩니다'] },
+              { l: '협력 브랜드', a: ['남성복 브랜드 4곳(비즈니스 캐주얼 2 · 정장 1 · 아웃도어 1)이 라운지에 세트 공급 · 잡화 1곳(벨트·구두) · 수선 전문 업체 1곳 · 롯데문화센터', '아웃도어를 넣은 이유는 "등산복 점퍼로 출근"을 부정하지 않고 바꿔 주기 위해서입니다'] },
+              { l: '필요 인력', a: ['총괄 1 · 코디 4(40~50대 경력 판매원 2 + 패션 전공 학생 2, 2교대) · 수선 1 · 안내 1 · 촬영 0.5 = 총 7.5명', '코디에 경력 판매원을 섞은 이유는 50대 고객이 "젊은 점원이 부담"이라고 했기 때문입니다. 학생 코디는 카드 작성·스타일 제안을 맡습니다'] },
+            ] },
+          { type: 'table', id: 'ph', cols: [{ h: '시기' }, { h: '도입기', t: 'area' }, { h: '집중기', t: 'area' }, { h: '마무리기', t: 'area' }],
+            rows: [
+              { l: '기간', a: ['10/6~10/19', '10/20~11/16', '11/17~11/30'] },
+              { l: '오프라인 프로그램', a: ['라운지 오픈 · 아파트 12개 단지 게시판 부착 · 마트 영수증 쿠폰 시작 · 문화센터 특강 1회', '특강 2회 · 자녀 결혼식 예복 상담 추가 · 예약 만석 시 코디 1명 추가 · 브랜드 세트 2차 교체 (11/3)', "'아직 카드 없으세요?' 게시판 교체 · 클로징 · 봄 출근룩 사전 예약 오픈 · 특강 1회"] },
+              { l: '온라인 · SNS', a: ['카톡 채널 예약 오픈 · 문화센터 회원 문자 · 자녀용 릴스 1편', '밴드·카톡 후기 리포스트 · 자녀용 릴스 2편 · 예약 리마인드 문자', "결산 문자 '스타일 카드가 생긴 1,500명' · 봄 예약 안내"] },
+            ] },
+          { type: 'table', id: 'vis', cols: [{ h: '예상 인원' }, { h: '도입기', t: 'num' }, { h: '집중기', t: 'num' }, { h: '마무리기', t: 'num' }],
+            rows: [
+              { l: '스타일 카드 발급 (=가입)', a: ['300', '900', '300'] },
+              { l: '방문객', a: ['600', '1800', '600'] },
+            ] },
+          { type: 'calc', id: 'phase' },
+          { type: 'q', id: 'focus', q: '기간 내내 같은 강도로 운영할 수는 없습니다. 어느 시기에 무엇을 집중합니까?',
+            a: '8주 합계 스타일 카드(=가입) 1,500건(예약 피팅 800 + 워크인 700) · 방문 3,000명. 집중기 4주에 60%를 두는 구조이며, 야간·주말 이벤트가 아니라 평일 낮 워크인과 예약이 중심입니다.' },
+        ],
+      },
+      {
+        id: 's8', no: '⑧', title: '예산 배분',
+        lead: '총예산은 조가 점포 규모에 맞게 정합니다. 채널 믹스(실습 ⑤)의 비중과 어긋나지 않게 맞추십시오.',
+        blocks: [
+          { type: 'field', id: 'total', t: 'num', label: '총예산 (원)', hint: '동래점 규모(2024년 전국 50위)에 맞춘 가정값', a: '150000000' },
+          { type: 'table', id: 'bud', cols: [{ h: '예산 항목' }, { h: '비중', t: 'pct' }, { h: '세부 내역', t: 'area' }, { h: '이 금액으로 정한 이유', t: 'area' }],
+            rows: [
+              { l: '공간 연출 · 라운지 조성', a: ['25', '남성복 층 라운지 40평(상담석 2 · 피팅룸 3 · 대기 소파) · 수선실 정비 · 마트 통로 배너', '피팅룸과 앉을 자리가 캠페인의 실체입니다. 입어 보지 못하면 마트와 다를 게 없습니다'] },
+              { l: '콘텐츠 · 프로그램', a: ['20', '코디 4인 8주 · 스타일 카드(종이+앱) 제작 · 문화센터 특강 4회 강사료 · 자녀용 릴스 3편', '스타일 카드와 특강이 콘텐츠입니다. 카드가 빠지면 캠페인이 아니라 행사입니다'] },
+              { l: '디지털 광고 · SNS', a: ['5', '자녀용 인스타 릴스 광고 (유튜브 0%)', '실습 ⑤ 인스타 5%와 일치. 50대 본인 도달용이 아니라 자녀 공유용입니다'] },
+              { l: '지역 매체 (아파트 · 마트) ※인플루언서 대체', a: ['30', '대단지 12곳 게시판·엘리베이터 광고 8주 · 관리사무소 안내 · 마트 영수증 쿠폰 · 카톡·문자 발송', '인플루언서 0%. 타깃이 반경 1.5km에 모여 살아 도달은 게시판이 가장 쌉니다'] },
+              { l: '사은품 · 멤버십 혜택', a: ['10', '회원가 차액 · 수선 무료 · 30일 코디 보장 교체 비용 · 봄 피팅 우선 예약권', '수선 무료가 50대에게는 가장 큰 혜택입니다 — 실패 비용을 없애는 장치'] },
+              { l: '운영 인력', a: ['7', '수선 1 · 안내 1 · 촬영 0.5 · 총괄 1 (8주)', '코디는 콘텐츠 항목에 두고 여기는 운영 인력만'] },
+              { l: '예비비', a: ['3', '예약 초과 시 코디 추가 · 결혼식 시즌 예복 수요 대응', '11월 결혼식 수요가 예상보다 크면 예복 세트를 늘립니다'] },
+            ] },
+          { type: 'calc', id: 'budget' },
+          { type: 'q', id: 'cpa', q: '조가 정한 목표 기준 · 1인당 획득 비용은 얼마인가',
+            a: '총 예산 기준 1.5억 ÷ 1,500명 = 1인당 100,000원. 신규 획득에 직접 쓰이는 예산(디지털 5 + 지역 매체 30 + 멤버십 10 = 45%, 6,750만원)만 보면 1인당 45,000원입니다. 가입자의 50%(750명)가 그 자리에서 사고, 스타일 카드 1,500장이 봄 캠페인과 결혼식 예복 시즌의 출발점으로 남습니다 — 2안(5억·5,000명)과 1인당 비용은 같고 규모만 1/3입니다.' },
+        ],
+      },
+      {
+        id: 's9', no: '⑨', title: 'KPI 설정과 측정 계획',
+        lead: '퍼널 단계별로 대표 지표를 고르고 측정 방법까지 정하십시오.',
+        blocks: [
+          { type: 'table', id: 'kpi', cols: [{ h: '퍼널 단계' }, { h: '주 / 부', t: 'pick', opts: ['주', '부'] }, { h: '대표 KPI', t: 'area' }, { h: '현재값', t: 'text' }, { h: '목표값', t: 'text' }, { h: '측정 방법 · 시점', t: 'area' }],
+            rows: [
+              { l: '인지 (Awareness)', a: ['부', '반경 1.5km 대단지 주민 캠페인 인지도', '— (신규 측정)', '40%', '단지 입구 설문 300명 · 4주차 · 8주차'] },
+              { l: '관심 (Interest)', a: ['부', '게시판 QR·카톡 채널 유입 → 예약 전환율', '— (신규 측정)', '20%', '카톡 채널 유입 ÷ 예약 완료 · 주간'] },
+              { l: '행동 (Action)', a: ['부', '예약 후 실제 방문율 · 워크인 카드 발급 수', '— (신규 측정)', '방문율 85% · 워크인 700', '예약 로그 vs 체크인 · 카드 발급 로그 · 일간'] },
+              { l: '전환 (Conversion)', a: ['주', '50대 이상 신규 앱 회원 수 (스타일 카드=가입)', '— (점포 비공개)', '1,500명', '앱 가입 로그 중 신규·연령 필터 · 일간'] },
+              { l: '관계 (Loyalty)', a: ['부', '피팅 후 구매 전환율 · 봄 출근룩 재예약률', '집계 없음', '구매 50% · 재예약 30%', 'POS 회원가 결제 ÷ 방문 · 종료 8주 후 재예약 로그'] },
+            ] },
+          { type: 'calc', id: 'kpiMain' },
+          { type: 'note', text: '목표를 유입이 아니라 구조로 계산해 보십시오. 코디 수 × 하루 타임 × 운영일 = 예약 피팅 수용량' },
+          { type: 'field', id: 'coach', t: 'num', label: '동시 상담 코디 (명)', a: '2' },
+          { type: 'field', id: 'slots', t: 'num', label: '하루 타임 (30분 단위)', a: '16' },
+          { type: 'field', id: 'days', t: 'num', label: '운영일', a: '50' },
+          { type: 'field', id: 'resv', t: 'num', label: '예약 피팅 목표', a: '800' },
+          { type: 'field', id: 'walk', t: 'num', label: '워크인 카드 발급 목표', a: '700' },
+          { type: 'calc', id: 'capacity' },
+          { type: 'q', id: 'double', q: '작년 대비 두 배 이상인 목표를 어떻게 달성할 것인가',
+            a: "동래점은 50대 앱 가입 자체가 집계된 적이 없어 '작년 대비'가 없습니다. 그래서 목표를 유입이 아니라 구조로 잡았습니다 — 코디 2인 동시 × 30분 × 하루 16타임 × 50일 ≈ 1,600건 중 예약 800, 여기에 마트 쿠폰·워크인으로 카드만 발급하는 700을 더해 1,500명. 즉 '반경 1.5km 단지 세대의 몇 %가 한 번 들어오는가'로 다시 정의합니다." },
+          { type: 'q', id: 'miss', q: '목표에 미달했을 때 무엇을 근거로 성과를 설명할 것인가',
+            a: "세 가지입니다. ① 구매 전환율 — 온 사람의 50%가 그 자리에서 샀다면 '피팅이 구매로 이어진다'는 증명. ② 수선·교체율 — 30일 보장 교체율이 낮으면 '나이·체형을 알고 골랐다'는 근거. ③ 스타일 카드 수 — 2034년까지 남은 기간 동안 봄·결혼식·정년 예복으로 이어지는 관계 자산. 점포 전체 매출(−14.3%)로만 평가하는 것은 처음부터 배제합니다." },
+        ],
+      },
+      {
+        id: 's10', no: '⑩', title: '캠페인 기획안 1페이지',
+        lead: '앞선 워크시트를 옮겨 담으십시오. 새로 쓰는 것이 아닙니다.',
+        blocks: [
+          { type: 'draft' },
+          { type: 'table', id: 'one', cols: [{ h: '구성' }, { h: '내용', t: 'area' }, { h: '가져올 워크시트', t: 'text' }],
+            rows: [
+              { l: '1. 배경과 목표', a: ['동래점은 대단지 아파트가 배후인 지역 밀착 점포이지만 2025년 상반기 매출 −14.3%, 2034년 영업 종료가 예정돼 있습니다(패션비즈·나무위키). 목표는 8주간 50대 이상 신규 앱 회원 1,500명 · 남성복 매출 +15%입니다.', '케이스 · ①'] },
+              { l: '2. 타깃과 인사이트', a: ["박정호 56세 관리직 32년차, 동래 럭키아파트 거주(1순위). 회사 복장 자율화로 정장을 벗으니 입을 옷이 없다 — 옷이 아니라 '내 나이·체형·회사를 알고 골라 줄 사람'이 없다는 것이 핵심 인사이트입니다.", '① · ②'] },
+              { l: '3. 캠페인명과 슬로건', a: ["'다시, 출근룩' — 오래 본 이웃이 압니다, 당신 스타일 (자녀용 문구: 아빠, 옷 사러 가요 / 우산: 가을의 모든 순간을 롯데에서). 봄에 '다시, 봄 출근룩'으로 반복되는 약속형 슬로건입니다.", '③'] },
+              { l: '4. 브랜드 스토리', a: ['문제(정장 벗으니 입을 옷 없음) → 해결(코디가 고른 3벌 피팅 · 스타일 카드 · 수선 무료 · 30일 보장 · 가족 동반) → 변화(월요일 아침이 편해지고 아들의 한마디 · 2월엔 설명 없이) → 가치(오래 본 이웃처럼 내 스타일을 아는 동네 백화점)', '④'] },
+              { l: '5. 채널 전략과 IMC 여정', a: ["아파트 게시판·엘리베이터 30% · 오프라인 라운지·마트·문화센터 50% · 카톡·밴드·문자 15% · 인스타(자녀용) 5% · 인플루언서·유튜브·라이브커머스 0%. IMC 7단계 전체에 '오래 본 이웃이 압니다'를 반복합니다.", '⑤ · ⑥'] },
+              { l: '6. 운영계획', a: ['10/6~11/30 8주 · 영업시간 내 예약 + 워크인 · 남성복 층 스타일 라운지 40평 + 수선실 · 코디 4인(경력 판매원 2 + 학생 2). 집중기 4주(10/20~11/16)에 60%를 둡니다.', '⑦'] },
+              { l: '7. 예산 계획', a: ['총 1.5억원(가정 — 동래점 규모 기준). 지역 매체 30%(4,500만원)가 최대 항목이며, 타깃이 반경 1.5km에 모여 살아 게시판이 가장 싼 도달이기 때문입니다. 인플루언서 0%.', '⑧'] },
+              { l: '8. KPI와 기대효과', a: ['주 KPI는 50대 이상 신규 회원 1,500명(스타일 카드=가입). 예약 피팅 800 + 워크인 700 구조이며, 가입자의 50%가 그 자리에서 삽니다. 1인당 획득 비용 4.5만원(직접 예산 기준) + 스타일 카드 1,500장이 봄·결혼식 시즌 자산으로 남습니다.', '⑨'] },
+            ] },
+          { type: 'calc', id: 'onepage' },
+        ],
+      },
+      {
+        id: 's11', no: '⑪', title: '발표와 상호 평가',
+        lead: '팀당 8분 발표, 4분 질의응답입니다.',
+        blocks: [
+          { type: 'table', id: 'pres', cols: [{ h: '발표 순서' }, { h: '담을 내용', t: 'area' }, { h: '시간 (분)', t: 'num' }],
+            rows: [
+              { l: '1. 타깃과 인사이트', a: ["박정호 56세, 복장 자율화로 정장을 벗으니 입을 옷이 없다 — '마트는 가도 백화점은 안 간다'는 동선까지 한 장면으로 보여 줍니다 (케이스 수치 2개만 인용: −14.3% · 2034년 종료)", '2'] },
+              { l: '2. 캠페인명과 스토리', a: ["'다시, 출근룩 — 오래 본 이웃이 압니다, 당신 스타일'. 문제→해결→변화→가치 네 칸을 한 문단으로 읽습니다. 3벌 피팅은 문이고 스타일 카드가 캠페인이라는 점을 말합니다", '2'] },
+              { l: '3. 채널 전략과 운영', a: ['아파트 게시판 30% · 라운지·마트·문화센터 50% · 인스타 5%(자녀용) · 인플루언서 0% — 왜 2안과 정반대인지 한 문장. 8주 · 라운지 40평 · 코디 4명(경력 2+학생 2)', '2'] },
+              { l: '4. 예산과 KPI', a: ['1.5억(가정) · 1인당 획득 4.5만원 · KPI 50대+ 신규 회원 1,500(예약 800+워크인 700) · 구매 전환 50% · 봄 재예약 30%. 미달 시 근거 3가지(전환율·교체율·카드 수)로 마무리', '2'] },
+            ] },
+          { type: 'calc', id: 'presTime', limit: 8, unit: '분' },
+          { type: 'field', id: 'teamA', t: 'text', label: '평가할 팀 A 이름', a: '' },
+          { type: 'field', id: 'teamB', t: 'text', label: '평가할 팀 B 이름', a: '' },
+          { type: 'table', id: 'ev', cols: [{ h: '평가 항목 (각 25점)' }, { h: '자체 평가', t: 'num' }, { h: '팀 A', t: 'num' }, { h: '팀 B', t: 'num' }, { h: '한 줄 코멘트', t: 'area' }],
+            rows: [
+              { l: '타깃 분석의 정확성', a: ['22', '', '', "'정장 벗으니 입을 옷이 없다'는 상황이 분명. −3: 반경 1.5km 단지 세대수·50대 인구를 아직 안 찾음(조가 확인)"] },
+              { l: '컨셉의 창의성', a: ['20', '', '', '"오래 본 이웃이 압니다"는 봄에도 쓰이는 약속형. −5: 3벌 피팅+스타일 카드는 2안과 같은 장치라 동래점만의 새로움은 수선 무료·가족 동반뿐'] },
+              { l: '통합 마케팅의 일관성', a: ['23', '', '', '7단계 모두 같은 문장, 인스타를 자녀용으로 한정하고 전화·카톡 예약을 열어 둠. −2: 문화센터 특강이 IMC 5단계에 억지로 들어간 느낌'] },
+              { l: '실행 가능성 (예산·일정·KPI)', a: ['20', '', '', '채널 비중과 예산 표 일치, 코디 수로 1,500명 계산. −5: 총예산 1.5억이 동래점 매출 대비 몇 %인지 근거 없음(점포 매출 비공개) · 아파트 게시판 광고 단가 미확인'] },
+            ] },
+          { type: 'calc', id: 'evalSum', max: 25 },
+        ],
+      },
+    ],
+  },
+
+  promo: {
+    code: '3-1',
+    name: '프로모션 기획 실습',
+    caseTitle: '가을 스타일링 페어',
+    caseSub: '케이스 C · 롯데백화점 부산본점 · 50~64세 여성의 가을 의류 구매와 재방문',
+    caseNote: '가용 예산 3억원 · 행사 공간 200평은 교재 조건입니다. 목표 수치는 실적이 아닌 기획 목표입니다.',
+    sheets: [
+      {
+        id: 'c1', no: '①', title: '3C 분석과 시사점 도출',
+        lead: '확인한 사실과 기획 판단을 나눠 적으십시오. 사실 칸에는 [공개 조사] · [공식 발표] · [원자료 집계] · [교재 조건]처럼 출처 종류를 붙입니다.',
+        blocks: [
+          { type: 'table', id: 'c3', cols: [{ h: '구분' }, { h: '확인한 사실 (데이터 근거)', t: 'area' }, { h: '여기서 읽히는 문제 또는 기회', t: 'area' }],
+            rows: [
+              { l: 'Customer · 시장 · 고객', a: ['[공개 조사] 오픈서베이는 50대 응답자의 81.0%가 온라인 쇼핑을 스스로 결정한다고 밝혔다. 시니어 조사에서는 유튜브·포털을 통한 신제품 탐색도 확인했다.', '[기획 판단] 직접 검색하고 선택하는 고객에게 비교 자료를 제공한다. 사진 상담과 실착으로 기존 옷에 어울리는지 확인하게 하고, 구매 결정은 고객에게 맡긴다.'] },
+              { l: 'Competitor · 경쟁사', a: ["[공식 발표] 신세계는 2026년 가을 '어텀 실루엣'에서 130여 개 패션·잡화 브랜드의 할인·사은 혜택과 일부 점포의 체험 클래스를 소개했다.", '[기획 판단] 나는 고객의 옷장과 착용 상황에서 상담을 시작하겠다. 같은 바지에 다른 재킷을 입어 보며 고르게 한다. 경쟁사에 유사 서비스가 없다고 단정하지 않는다.'] },
+              { l: 'Company · 자사', a: ['[원자료 집계] 2026년 8월 서면역 토요일 하차는 하루 평균 76,280.4명, 최다 시간은 12~13시다. [교재 조건] 가용 예산 3억원, 행사 공간 200평이다.', '[기획 판단] 토요일 낮 상담을 우선 알리고 평일·주말 예약을 함께 받는다. 역 통계는 접근 시간만 참고하며, 중장년 고객 수나 점포 방문객 수로 환산하지 않는다.'] },
+            ] },
+          { type: 'calc', id: 'sourceTag' },
+          { type: 'table', id: 'imp', cols: [{ h: '시사점' }, { h: '도출한 방향', t: 'area' }, { h: '근거가 된 데이터', t: 'area' }],
+            rows: [
+              { l: '1', a: ['유튜브·검색에서 비교 정보를 보고, 매장에서 입어 보고 결정하게 한다.', '50대의 온라인 쇼핑 자율 결정 81.0% / 시니어 조사 요약'] },
+              { l: '2', a: ['가을 모임·출근·여행에 입을 옷을 기존 옷과 연결해 제안한다.', '가을 패션 경쟁 행사 확인 + 착용 상황 중심의 기획 판단'] },
+              { l: '3', a: ['토요일 낮을 주요 안내 시간으로 잡고, 실제 예약률로 시간대를 조정한다.', '서면역 토요일 평균 하차 76,280.4명 / 최다 12~13시'] },
+            ] },
+        ],
+      },
+      {
+        id: 'c2', no: '②', title: '타깃 페르소나와 니즈 정의',
+        lead: '핵심 고객을 한 사람으로 좁히고, 겉으로 말하는 욕구와 속마음을 나눠 적으십시오.',
+        blocks: [
+          { type: 'field', id: 'core', t: 'text', label: '핵심 고객', a: '부산 생활권 50~64세 여성' },
+          { type: 'table', id: 'per', cols: [{ h: '항목' }, { h: '작성란', t: 'area' }],
+            rows: [
+              { l: '이름 · 나이 · 직업', a: ['김정희 · 57세 · 중소기업 경리'] },
+              { l: '거주지 · 이동 수단', a: ['부산진구 당감동 거주 / 출근은 버스, 주말 쇼핑은 대중교통'] },
+              { l: '라이프스타일', a: ['평일에는 출근하고 주말에 모임에 간다. 익숙한 검정 바지는 편하지만 상의를 바꿔도 늘 비슷해 보여 가을 재킷을 찾고 있다.'] },
+              { l: '백화점 방문 주기', a: ['한두 달에 한 번 주말에 방문한다. 마음에 든 옷은 입어 보고 산다.'] },
+              { l: '취미 · 관심사', a: ['주말 친구 모임, 전시 관람, 가을 여행 / 편안하고 단정한 옷차림'] },
+              { l: '주로 쓰는 SNS', a: ['유튜브에서 코디를 보고 네이버로 검색 / 카카오톡으로 친구와 사진 공유'] },
+              { l: '영향받는 사람', a: ['비슷한 키·체형의 착장 영상과 함께 쇼핑하는 오래된 친구'] },
+              { l: '선호 카테고리', a: ['재킷·니트·편안한 슬랙스 / 출근과 주말에 함께 입을 기본 색상'] },
+            ] },
+          { type: 'table', id: 'needs', cols: [{ h: '니즈 유형' }, { h: '고객이 말하는 것과 마음속 바람', t: 'area' }, { h: '프로모션에서 이렇게 풀 수 있다', t: 'area' }],
+            rows: [
+              { l: '표현 니즈 · 겉으로 말하는 욕구', a: ['"다음 달 동창 모임에 입을 재킷이 필요해요. 팔을 움직일 때 편하고, 지금 입는 검정 바지에도 잘 맞았으면 해요. 세탁이 너무 번거로운 옷은 피하고 싶어요."', '검정 바지 사진에 후보 재킷 두 벌을 맞춰 본다. 앉고 팔을 움직이며 착용감을 비교하고, 모임용·출근용 조합과 소재·관리법·최종 가격을 함께 안내한다.'] },
+              { l: '잠재 니즈 · 선택 뒤에 숨은 마음', a: ['"특별한 날 한 번 입고 끝나는 옷을 사고 싶지는 않아요. 제 취향을 살리면서 잘 골랐다는 확신이 있으면 좋겠어요. 남이 좋다는 옷보다 제가 편하고 마음에 드는 옷을 찾고 싶어요."', '정희 씨가 직접 비교하고 고르게 한다. 선택한 조합을 사진과 큰 글씨 코디 카드로 남겨 집에서도 따라 입게 하고, 다른 옷 조합이 필요할 때 다시 상담받게 한다.'] },
+            ] },
+          { type: 'field', id: 'quote', t: 'area', label: '페르소나의 한마디', a: '"편하게 입어도 단정해 보이고, 내 옷과 여러 번 맞춰 입을 수 있으면 좋겠어요."' },
+        ],
+      },
+      {
+        id: 'c3', no: '③', title: '고객 여정 지도 작성',
+        lead: '페르소나가 검색에서 발견한 뒤, 직접 입어 보고 다시 찾기까지의 경험을 그리십시오.',
+        blocks: [
+          { type: 'table', id: 'jm', cols: [{ h: '항목' }, { h: '01 인지', t: 'area' }, { h: '02 방문 전', t: 'area' }, { h: '03 방문 · 체험', t: 'area' }, { h: '04 구매', t: 'area' }, { h: '05 사후', t: 'area' }],
+            rows: [
+              { l: '접점', a: ['유튜브 코디 영상 / 네이버 검색·친구의 공유', '행사 안내·온라인 예약 / 전화·현장 접수', '사진 상담과 피팅룸 / 두 벌 비교·거울', '참여 브랜드 매장 / 가격·사이즈·수선 안내', '종이·모바일 코디 카드 / 브랜드 매장 재상담'] },
+              { l: '행동', a: ['"내 검정 바지도 저렇게 입겠네." 영상을 저장하고 장소를 찾아본다.', '모임 전에 갈 수 있는 시간을 고르고 무료·구매 조건을 확인한다.', '옷 사진을 보여 주고 두 벌을 입어 본다. 앉고 움직이며 비교한다.', '모임과 출근에 입을 조합, 착용감과 가격을 살펴 구매를 정한다.', '집에서 코디를 활용하고 다른 옷과 맞춰 보고 싶을 때 매장을 찾는다.'] },
+              { l: '감정 한마디', a: ['내 옷에도 해볼 만하네', '상담만 받아도 될까', '직접 입으니 알겠네', '자주 입을 수 있을까', '다음 코디도 물어볼까'] },
+              { l: '불편 · 이탈 위험', a: ['모델 착장만 있고 내 옷에 적용할 방법이 보이지 않는다.', '예약 절차·상담 시간·구매 의무가 불분명해 미룬다.', '원하는 사이즈가 없거나 피팅 순서가 꼬여 기다린다.', '맞는 길이와 관리법, 수선 가능 여부를 몰라 결정을 미룬다.', '추천 조합을 잊거나 상담 후 연락받을 곳을 찾지 못한다.'] },
+              { l: '프로모션 기회', a: ['같은 바지에 재킷 두 벌을 비교하는 영상을 보여 준다.', '사진 1장·무료 30분·구매 선택을 안내하고 전화 접수도 연다.', '사이즈와 피팅 순서를 미리 확인하고 후보 두 벌을 준비한다.', '출근·모임 코디와 상품 정보를 한 카드에서 비교하게 한다.', '코디 카드와 매장 연락처를 주고 30일 안에 재상담을 안내한다.'] },
+            ] },
+          { type: 'table', id: 'emo', cols: [{ h: '감정 곡선' }, { h: '01', t: 'pick', opts: ['+', '0', '−'] }, { h: '02', t: 'pick', opts: ['+', '0', '−'] }, { h: '03', t: 'pick', opts: ['+', '0', '−'] }, { h: '04', t: 'pick', opts: ['+', '0', '−'] }, { h: '05', t: 'pick', opts: ['+', '0', '−'] }],
+            rows: [{ l: '+ / 0 / −', a: ['+', '0', '+', '−', '+'] }] },
+          { type: 'calc', id: 'emotion' },
+          { type: 'q', id: 'low', q: '감정이 가장 낮은 단계와, 그 지점을 프로모션으로 어떻게 끌어올릴 것인가',
+            a: '가장 큰 망설임은 구매 직전의 "집에서도 자주 입을까?"다. 기존 옷과의 두 가지 코디, 착용감, 관리법과 최종 가격을 함께 보여 줘 스스로 결정할 근거를 준다.' },
+        ],
+      },
+      {
+        id: 'c4', no: '④', title: 'SMART 목표 설정',
+        lead: '상담 · 구매 · 재방문의 목표와 집계 기준을 같은 고객으로 연결하십시오.',
+        blocks: [
+          { type: 'field', id: 'period', t: 'text', label: '행사 기간', a: '2026.10.16~11.29 (45일)' },
+          { type: 'table', id: 'sg', cols: [{ h: 'No' }, { h: '목표 문장 (SMART 형식)', t: 'area' }, { h: '현재값', t: 'text' }, { h: '목표값', t: 'text' }, { h: '측정 방법', t: 'area' }],
+            rows: [
+              { l: '1', a: ['10/16~11/29에 50~64세 여성 1,800명의 사진 상담과 실착 비교를 완료한다. 같은 고객의 첫 완료 상담만 센다.', '첫 행사 / 비교 실적 없음', '1,800명', '행사 참여 ID와 완료 기록 / 취소·미방문·재상담 제외'] },
+              { l: '2', a: ['첫 상담 완료 고객 중 540명이 7일 이내 참여 의류 브랜드에서 구매하도록 한다. 마지막 상담의 구매는 12/6까지 집계한다.', '기존 연결 / 전환율 미확인', '540명 / 상담자의 30%', '동의한 고객의 상담 ID와 POS 연결 / 여러 번 사도 구매자는 1명'] },
+              { l: '3', a: ['첫 상담 완료 고객 중 360명이 30일 이내 참여 브랜드 매장에 다른 날짜로 재방문하도록 한다. 마지막 고객은 12/29까지 확인한다.', '기존 재방문율 / 미확인', '360명 / 상담자의 20%', '매장 방문 시 참여 ID 확인 / 구매 없이 재상담한 방문도 포함'] },
+            ] },
+          { type: 'table', id: 'smart', cols: [{ h: 'SMART 점검' }, { h: '목표 1', t: 'text' }, { h: '목표 2', t: 'text' }, { h: '목표 3', t: 'text' }],
+            rows: [
+              { l: 'S · 구체적인가', a: ['■', '■', '■'] },
+              { l: 'M · 측정 가능한가', a: ['■', '■', '■'] },
+              { l: 'A · 달성 가능한가', a: ['운영일·수요 확인', '실제 전환율 검증', '실제 재방문 검증'] },
+              { l: 'R · 전체 전략과 맞는가', a: ['■', '■', '■'] },
+              { l: 'T · 기한이 있는가', a: ['■', '■', '■'] },
+            ] },
+          { type: 'note', text: '달성 가능성은 수용량으로 확인합니다. 상담원 × 하루 건수 × 운영일' },
+          { type: 'field', id: 'staff', t: 'num', label: '상담원 (명)', a: '5' },
+          { type: 'field', id: 'perDay', t: 'num', label: '상담원 1명의 하루 상담 건수', a: '12' },
+          { type: 'field', id: 'days', t: 'num', label: '운영일', a: '40' },
+          { type: 'field', id: 'g1', t: 'num', label: '목표 1 · 첫 상담 완료 (명)', a: '1800' },
+          { type: 'field', id: 'g2', t: 'num', label: '목표 2 · 7일 내 구매 (명)', a: '540' },
+          { type: 'field', id: 'g3', t: 'num', label: '목표 3 · 30일 내 재방문 (명)', a: '360' },
+          { type: 'calc', id: 'smartCap' },
+        ],
+      },
+      {
+        id: 'c5', no: '⑤', title: '프로모션 컨셉 개발',
+        lead: '행사명과 한 줄 컨셉을 정하고, 좋은 컨셉의 5조건으로 점검하십시오.',
+        blocks: [
+          { type: 'table', id: 'cp', cols: [{ h: '항목' }, { h: '작성란', t: 'area' }, { h: '이렇게 정한 이유', t: 'area' }],
+            rows: [
+              { l: '행사명', a: ['롯데백화점 부산본점 가을 스타일링 페어', '롯데백화점 부산본점에서 가을옷을 입어 보고 자신에게 맞는 코디를 찾는 행사임을 바로 알린다.'] },
+              { l: '한 줄 컨셉 문장', a: ['지금의 나에게 편안하고 멋스럽게, 내 옷과 맞춰 보는 가을 코디 30분', '모임·출근·여행에 쓸 옷을 찾는 정희 씨에게 실제 활용 장면을 보여 준다. 두 벌을 입고 움직여 보며 편안함과 스타일을 함께 고르게 한다.'] },
+              { l: '핵심 비주얼 · 키 컬러', a: ['아이보리 + 테라코타 + 딥그린 / 같은 고객·같은 바지의 두 가지 재킷', '연령을 강조하는 문구 대신 옷의 질감과 자연스러운 착장을 보여 준다. 화면과 인쇄물은 글씨 대비를 높여 편하게 읽도록 한다.'] },
+              { l: '대표 해시태그', a: ['#롯데가을스타일링 #내옷에한벌', '행사와 참여 행동을 기억하기 위한 제안이다. 필수 게시 조건을 두지 않고 코디 사진을 개인적으로 저장·공유하게 한다.'] },
+            ] },
+          { type: 'table', id: 'five', cols: [{ h: '좋은 컨셉의 5조건' }, { h: '이 컨셉은 어떻게 충족하는가', t: 'area' }, { h: '충족', t: 'pick', opts: ['충족', '설계', '검토', '협의', '미흡'] }],
+            rows: [
+              { l: '차별성 · 경쟁사와 구분되는가', a: ['고객이 입던 옷 사진과 착용 상황을 상담의 출발점으로 삼는다. 할인 정보에 개인별 활용법을 더하는 방향이다.', '검토'] },
+              { l: '재미 · 즐기고 싶은 요소가 있는가', a: ['익숙한 검정 바지에 재킷을 바꿔 입어 보며 새 조합을 발견한다. 동행 친구와 비교하는 과정도 즐길 수 있다.', '설계'] },
+              { l: '체험 · 참여할 거리가 있는가', a: ['옷 사진 선택, 후보 두 벌 실착, 앉기·팔 움직이기, 코디 결정에 고객이 직접 참여한다.', '설계'] },
+              { l: 'SNS 확산 · 찍고 싶어지는가', a: ['원하는 고객에게 비교 사진을 제공한다. 카카오톡으로 친구에게 공유하거나 개인 앨범에 저장할 수 있다.', '검토'] },
+              { l: '브랜드 일치 · 백화점 이미지와 어울리는가', a: ['입점 의류 상품의 소재·사이즈·수선 정보를 정확히 설명하고 실제 매장으로 연결한다. 지원 범위는 브랜드와 협의한다.', '협의'] },
+            ] },
+          { type: 'calc', id: 'five' },
+        ],
+      },
+      {
+        id: 'c6', no: '⑥', title: '운영 프로그램 설계',
+        lead: '사진 상담 30분 안에서 두 벌 실착 · 상품 비교 · 코디 기록까지 마치도록 짜십시오.',
+        blocks: [
+          { type: 'table', id: 'pg', cols: [{ h: 'No' }, { h: '프로그램명', t: 'text' }, { h: '내용', t: 'area' }, { h: '여정 단계', t: 'pick', opts: ['유입', '체류', '전환', '재방문'] }, { h: '운영 일정 · 횟수', t: 'area' }, { h: '공간 (평)', t: 'num' }, { h: '인력', t: 'text' }],
+            rows: [
+              { l: '1', a: ['내 옷에 맞는 가을 전시', '같은 바지의 출근·모임 코디를 비교해 상담에서 받을 도움을 보여 준다.', '유입', '10/16~11/29 영업일 / 주 1회 코디 교체', '30', '운영 2명 공동 담당'] },
+              { l: '2', a: ['사진 상담·상황 확인', '기존 옷 사진과 모임·출근 용도를 확인하고 후보 두 벌을 고른다.', '체류', '30분 중 5분 / 하루 총 60건 상한', '35', '상담원 5명'] },
+              { l: '3', a: ['두 벌 실착·핏 비교', '팔·어깨의 움직임과 길이를 비교한다. 후보 재고·사이즈를 먼저 확인한다.', '전환', '30분 중 15분 / 다섯 상담 흐름에 맞춰 피팅', '45', '상담 5명·브랜드 협업'] },
+              { l: '4', a: ['상품정보·구매 안내', '최종 가격·소재·관리법·수선 조건을 설명하고 참여 매장으로 안내한다.', '전환', '30분 중 5분 / 상품별 정보 카드 준비', '20', '상담 인력·브랜드 공유'] },
+              { l: '5', a: ['코디 기록·재방문 안내', '사진·큰 글씨 코디 카드와 매장 연락처를 제공한다. 재상담 시간을 안내한다.', '재방문', '30분 중 5분 / 종료 후 재상담은 브랜드 매장', '10', '운영 2명 공동 담당'] },
+            ] },
+          { type: 'field', id: 'aisle', t: 'num', label: '통로 · 대기 · 지원 공간 (평)', a: '60' },
+          { type: 'field', id: 'hall', t: 'num', label: '행사장 전체 (평)', hint: '교재 조건', a: '200' },
+          { type: 'calc', id: 'space' },
+          { type: 'q', id: 'fit', q: '행사장 200평에 이 프로그램이 모두 들어가는가 · 안 되면 무엇을 뺄 것인가',
+            a: '전시 30 + 상담 35 + 피팅 45 + 상품 안내 20 + 기록 10 + 통로·대기·지원 60 = 200평. 상담원 5명은 전 과정을 함께 맡으며 중복 인력으로 세지 않는다.' },
+        ],
+      },
+      {
+        id: 'c7', no: '⑦', title: '홍보 전략과 채널별 일정',
+        lead: '검색 · 유튜브에서 비교 정보를 주고, 익숙한 접수 방식으로 예약을 연결하십시오.',
+        blocks: [
+          { type: 'table', id: 'sch', cols: [{ h: '채널' }, { h: '준비 9/24~10/1', t: 'area' }, { h: '예약 10/2~8', t: 'area' }, { h: '개장 전 10/9~15', t: 'area' }, { h: '행사 10/16~11/29', t: 'area' }, { h: '사후 ~12/29', t: 'area' }],
+            rows: [
+              { l: '유튜브 · 공식 영상', a: ['동일 바지·재킷 2벌 비교 영상 제작', '모임·출근 코디와 착용감 비교 소개', '30분 동안 무엇을 받는지 실제 순서 안내', '동의받은 착장 사례 주 1편·예약 링크', '코디 활용법 / 관리법 안내'] },
+              { l: '네이버 검색 · 블로그', a: ['가을 재킷·모임룩 검색어 비교', '가격·소재·사이즈 읽을거리와 예약 안내', '위치·교통·준비물 자주 묻는 내용 정리', '상품 교체·예약 시간 안내 최신화', '종료 공지 / 매장 문의처'] },
+              { l: '점포 앱 · 동의 고객 안내', a: ['의류 관심 고객과 발송 가능 범위 확인', '온라인·전화 예약 안내 발송', '예약자에게 시간·위치 / 옷 사진 준비 안내', '예약 전날 알림 / 희망 고객에게 재상담', '30일 내 재방문 집계'] },
+              { l: '점내 · 참여 브랜드', a: ['전시·매장 연결 동선 안내물 협의', '직원이 상담 경험과 접수 방법 설명', '가능 사이즈·재고 확인 / 현장 접수 동선 점검', '남은 시간·대기 표시 / 매장 구매·재상담 연결', '기록 인계 / 문의 응대'] },
+              { l: '동행 고객 · 지역 채널', a: ['생활권·관심 주제가 맞는 채널 확인', '내 옷과 맞춰 입는 경험 소개', '친구와 공유하기 쉬운 짧은 안내 이미지', '공유는 자율 / 동행자도 별도 접수', '후기·공유 반응 정리'] },
+            ] },
+          { type: 'calc', id: 'grid' },
+          { type: 'q', id: 'where', q: '페르소나가 "내게 도움이 되겠다"고 느낄 정보를 어디에 보여 줄까?',
+            a: '"모임에도 출근에도 입을 재킷, 내 바지와 직접 맞춰 보세요." 착용 장면을 먼저 보여 주고 무료 30분·옷 사진 1장·구매 선택을 같은 문장으로 안내한다.' },
+          { type: 'q', id: 'time', q: '요일별 시간 선택을 어떻게 돕고, 유입을 어떻게 확인할까?',
+            a: '토요일 낮과 평일 예약 시간을 함께 노출한다. 예약 시 유입 경로를 선택하게 하고 채널별 상담 완료율을 비교한다. 조회수가 높아도 예약·방문으로 이어지지 않으면 내용을 고친다.' },
+        ],
+      },
+      {
+        id: 'c8', no: '⑧', title: '예산 배분',
+        lead: '가용 예산을 상담 · 피팅 · 상품 정보에 배분하십시오. 원본 참고 비중과 달라진 이유를 적습니다.',
+        blocks: [
+          { type: 'field', id: 'total', t: 'num', label: '가용 예산 (원)', hint: '교재 조건 · 실제 견적 전', a: '300000000' },
+          { type: 'table', id: 'bud', cols: [{ h: '예산 항목' }, { h: '원본 참고', t: 'pct' }, { h: '배분 비중', t: 'pct' }, { h: '세부 내역', t: 'area' }, { h: '이 비중으로 정한 이유', t: 'area' }],
+            rows: [
+              { l: '광고 · 홍보', a: ['30', '15', '착장 비교 영상 1,500만 / 검색·영상·지역 홍보 3,000만', '비교 정보를 주고 예약으로 연결 / 채널별 완료율로 집행 조정'] },
+              { l: '행사장 조성 · 공간 연출', a: ['25', '20', '피팅·상담 집기·조명 / 설치·철거·전시', '실착 동선과 사생활 보호를 우선 / 장식 구조물은 최소화'] },
+              { l: '콘텐츠 · 프로그램 운영', a: ['20', '20', '예약·성과 기록 2,000만 / 상품 정보·프로그램 4,000만', '입어 본 상품과 구매·재방문을 연결 / 단순 유입 숫자에 그치지 않음'] },
+              { l: '경품 · 사은품', a: ['10', '5', '의류 관리 키트 1,260만 / 보관·운송 240만', '1,800개×7,000원 계획 / 상담 완료 고객의 활용 지원'] },
+              { l: '인력 운영', a: ['8', '25', '상담 4,500만 + 운영 1,620만 / 교대·교육·후속 지원 1,380만', '상담 5명·운영 2명 확보 / 단가·근무표는 견적 확인'] },
+              { l: '제작물 · 인쇄', a: ['4', '5', '코디 카드·가격·관리법 / 예약·위치·동선 안내', '읽기 쉬운 크기와 명확한 정보 / 종이·모바일 선택 제공'] },
+              { l: '예비비', a: ['3', '10', '추가 인력·수리·재제작 / 실제 필요 시 승인 집행', '예비비는 자동 지출하지 않음'] },
+            ] },
+          { type: 'calc', id: 'budget2' },
+          { type: 'table', id: 'cut', cols: [{ h: '20% 삭감 시 줄일 금액' }, { h: '삭감액 (원)', t: 'num' }],
+            rows: [
+              { l: '광고 · 홍보', a: ['15000000'] }, { l: '행사장 조성 · 공간 연출', a: ['20000000'] }, { l: '콘텐츠 · 프로그램 운영', a: ['10000000'] },
+              { l: '경품 · 사은품', a: ['10000000'] }, { l: '인력 운영', a: ['0'] }, { l: '제작물 · 인쇄', a: ['5000000'] }, { l: '예비비', a: ['0'] },
+            ] },
+          { type: 'calc', id: 'cut' },
+          { type: 'q', id: 'cutWhy', q: '예산이 20% 삭감된다면 어느 항목부터 줄일 것인가',
+            a: '20%인 6,000만원 삭감: 공간 장식 2,000만 + 광고 1,500만 + 사은품 1,000만 + 제작 500만 + 부가 콘텐츠 1,000만. 합계 2.4억원. 상담원·피팅·핵심 상품 정보는 우선 유지한다.' },
+        ],
+      },
+      {
+        id: 'c9', no: '⑨', title: 'KPI 설정과 ROI 추정',
+        lead: '구매 전환 · 재방문을 주 성과로 봅니다. GP율은 교재 계산값이며 실측치가 아닙니다.',
+        blocks: [
+          { type: 'table', id: 'kpi', cols: [{ h: '여정 단계' }, { h: '주 / 부', t: 'pick', opts: ['주', '부'] }, { h: '대표 KPI', t: 'area' }, { h: '현재값', t: 'text' }, { h: '목표값', t: 'text' }, { h: '측정 방법', t: 'area' }],
+            rows: [
+              { l: '고객 유입', a: ['부', '50~64세 여성 행사 접수', '신규 집계', '유입 경로 관찰', '접수 ID·연령대 자율 응답 / 예약·현장 접수 구분'] },
+              { l: '체류 증가', a: ['부', '첫 상담·실착 완료자', '비교 실적 없음', '1,800명', '완료 ID 중복 제거 / 취소·미방문·재상담 제외'] },
+              { l: '구매 전환', a: ['주', '첫 상담 후 7일 내 구매자', '기존 전환율 미확인', '540명 / 30%', '동의한 참여 ID와 POS 연결 / 같은 고객 구매자는 1명'] },
+              { l: '재방문 유도', a: ['주', '첫 상담 후 30일 내 재방문자', '기존 재방문율 미확인', '360명 / 20%', '다른 날짜 브랜드 매장 방문 / 상담 ID 확인·12/29 마감'] },
+            ] },
+          { type: 'field', id: 'cost', t: 'num', label: '프로모션 총 비용 (원)', hint: '비워 두면 ⑧의 가용 예산을 씁니다.', a: '300000000' },
+          { type: 'field', id: 'gp', t: 'num', label: 'GP율 (%)', hint: '원본의 계산 조건 · 실제 점포 GP 아님', a: '30' },
+          { type: 'field', id: 'buyers', t: 'num', label: '구매자 수 (명)', a: '540' },
+          { type: 'field', id: 'inc', t: 'num', label: '실제 증분 매출 (원) · 확보 후 입력', hint: '행사 매출 − 비교 가능한 기준 매출', a: '' },
+          { type: 'calc', id: 'roi' },
+          { type: 'q', id: 'roiNote', q: '구매 연결 매출과 증분 매출은 어떻게 다른가',
+            a: '구매자 540명만으로 손익분기 10억원을 만들려면 1인당 약 185만원의 증분 매출이 필요하다. 구매 연결 매출과 행사 덕분에 새로 생긴 증분 매출은 다르다. 실제 GP·기준 매출을 확보한 뒤 ROI를 산출하고, 예산은 단계적으로 집행한다.' },
+        ],
+      },
+      {
+        id: 'c10', no: '⑩', title: '기획안 1페이지',
+        lead: '앞선 워크시트를 옮겨 담으십시오. 새로 쓰는 것이 아닙니다.',
+        blocks: [
+          { type: 'draft' },
+          { type: 'table', id: 'one', cols: [{ h: '구성' }, { h: '내용', t: 'area' }, { h: '가져올 워크시트', t: 'text' }],
+            rows: [
+              { l: '행사명 · 컨셉', a: ['롯데백화점 부산본점 가을 스타일링 페어 — 지금의 나에게 편안하고 멋스럽게, 내 옷과 맞춰 보는 가을 코디 30분 · 2026.10.16~11.29 45일간 운영 제안', '⑤'] },
+              { l: '기획 배경', a: ['검색으로 탐색하는 고객에게 매장에서 직접 비교할 이유를 제안', '①'] },
+              { l: '타깃과 니즈', a: ['부산 생활권 50~64세 여성 / 모임과 출근에 함께 입을 옷 찾기', '②'] },
+              { l: '30분의 고객 경험', a: ['사진 상담 5분 → 두 벌 실착 15분 → 상품 비교 5분 → 코디 기록 5분 · 무료·구매 선택 · 상담원 5명 · 프로그램 140평 + 통로·대기·지원 60평', '③ · ⑥'] },
+              { l: '목표', a: ['첫 상담·실착 완료 1,800명 · 7일 내 구매 540명(30%) · 30일 내 재방문 360명(20%)', '④'] },
+              { l: '홍보', a: ['검색·유튜브·동의 고객 안내 / 온라인·전화·현장 접수', '⑦'] },
+              { l: '예산 배분', a: ['3억원 배분 상한 · 견적 전 — 홍보 15%·공간 20%·콘텐츠 20%·사은 5% / 인력 25%·제작 5%·예비 10%', '⑧'] },
+              { l: '성과와 수익성', a: ['구매·재방문 추적 / 단계 집행 / GP 30% 조건의 손익분기 10억원', '⑨'] },
+            ] },
+          { type: 'calc', id: 'onepage' },
+        ],
+      },
+      {
+        id: 'c11', no: '⑪', title: '발표와 상호 평가',
+        lead: '기획 의도 3분 + 피드백 1분 · 각 20점의 다섯 기준으로 근거와 실행을 점검하십시오.',
+        blocks: [
+          { type: 'table', id: 'pres', cols: [{ h: '발표 순서' }, { h: '담을 내용', t: 'area' }, { h: '시간 (초)', t: 'num' }],
+            rows: [
+              { l: '1. 문제 정의', a: ['"저는 스스로 정보를 찾는 중장년 고객이 매장에서 옷을 비교하고 선택할 수 있는 경험에 주목했습니다."', '30'] },
+              { l: '2. 타깃과 컨셉', a: ['"가을 모임과 출근에 함께 입을 옷을 찾는 50~64세 여성에게, 기존 옷과 맞춰 보는 가을 스타일링 페어를 제안합니다."', '40'] },
+              { l: '3. 운영과 홍보', a: ['"옷 사진으로 상담을 시작해 두 벌을 입어 보고 고르게 하겠습니다. 검색·영상에서 알리고 온라인·전화·현장으로 접수합니다."', '40'] },
+              { l: '4. 예산과 KPI', a: ['"상담 1,800명, 7일 내 구매 540명, 30일 내 재방문 360명이 목표입니다. 3억원은 상한으로 배분하고 구매·비용 검증 뒤 집행하겠습니다."', '70'] },
+            ] },
+          { type: 'calc', id: 'presTime', limit: 180, unit: '초' },
+          { type: 'field', id: 'teamA', t: 'text', label: '평가할 팀 A 이름', a: '' },
+          { type: 'field', id: 'teamB', t: 'text', label: '평가할 팀 B 이름', a: '' },
+          { type: 'table', id: 'ev', cols: [{ h: '평가 기준 (각 20점)' }, { h: '자체 평가', t: 'num' }, { h: '팀 A', t: 'num' }, { h: '팀 B', t: 'num' }, { h: '상호 평가 때 확인할 내용', t: 'area' }],
+            rows: [
+              { l: '문제 정의의 근거', a: ['', '', '', '전국 시니어 조사와 서면역 원자료의 대상·시점을 밝혔다. 이를 부산본점 여성 고객 전체의 특성으로 단정하지 않는다.'] },
+              { l: '컨셉의 차별성', a: ['', '', '', '모임·출근 코디와 편안한 착용감을 직접 비교하게 한다. 할인 외에 방문해야 할 이유가 설명되는지 확인한다.'] },
+              { l: '운영·홍보의 구체성', a: ['', '', '', '30분·200평·5명 상담·접수 방식이 연결된다. 브랜드 재고와 휴점일을 확인해야 실제로 운영할 수 있다.'] },
+              { l: '예산과 KPI의 현실성', a: ['', '', '', '예산 3억원·100%와 손익분기 10억원을 계산했다. 전환율·객단가 근거 없이 수익 달성을 확정하지 않는다.'] },
+              { l: '발표 완성도', a: ['', '', '', '고객·행사·목표가 앞뒤에서 일치한다. 숫자가 실제 조사인지, 기획 목표인지 구분하며 3분 안에 설명한다.'] },
+            ] },
+          { type: 'calc', id: 'evalSum', max: 20 },
+        ],
+      },
+    ],
+  },
+};
+
+</script>
+<script>
+(() => {
+  'use strict';
+
+  const STORE_KEY = 'campaign-lab-v1';
+  const $ = (s, el = document) => el.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const num = (v) => {
+    if (v === undefined || v === null) return NaN;
+    const s = String(v).replace(/[,\s원명%평]/g, '').replace('−', '-');
+    if (s === '') return NaN;
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? n : NaN;
+  };
+  const fmt = (n, d = 0) => Number.isFinite(n) ? n.toLocaleString('ko-KR', { maximumFractionDigits: d, minimumFractionDigits: 0 }) : '—';
+  const won = (n) => {
+    if (!Number.isFinite(n)) return '—';
+    if (Math.abs(n) >= 1e8) return fmt(n / 1e8, 2) + '억원';
+    if (Math.abs(n) >= 1e4) return fmt(n / 1e4, 1) + '만원';
+    return fmt(n) + '원';
+  };
+
+  /* ---------- 상태 ---------- */
+  let state = { course: 'campaign', sheet: { campaign: 's1', promo: 'c1' }, team: '', author: '', answers: true, data: { campaign: {}, promo: {} } };
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      state = { ...state, ...s, sheet: { ...state.sheet, ...(s.sheet || {}) }, data: { campaign: {}, promo: {}, ...(s.data || {}) } };
+    }
+  } catch (e) { /* 저장소를 못 쓰면 이번 세션 메모리로만 동작 */ }
+
+  let saveTimer = null;
+  const save = () => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); flash('저장됨'); } catch (e) { flash('이 브라우저에는 저장되지 않습니다 · 백업 코드를 복사해 두세요'); }
+    }, 350);
+  };
+
+  const course = () => COURSES[state.course];
+  const D = () => state.data[state.course];
+  const val = (key) => D()[key] ?? '';
+  const setVal = (key, v) => { if (v === '' || v == null) delete D()[key]; else D()[key] = v; };
+
+  /* 키 규칙 — 필드: 시트.필드 / 표 칸: 시트.표.행.열 */
+  const fkey = (sid, id) => `${sid}.${id}`;
+  const ckey = (sid, tid, r, c) => `${sid}.${tid}.${r}.${c}`;
+
+  const V = (sid, id) => val(fkey(sid, id));
+  const N = (sid, id) => num(V(sid, id));
+  const C = (sid, tid, r, c) => val(ckey(sid, tid, r, c));
+  const CN = (sid, tid, r, c) => num(C(sid, tid, r, c));
+
+  const findSheet = (sid) => course().sheets.find((s) => s.id === sid);
+  const findBlock = (sid, id) => (findSheet(sid)?.blocks || []).find((b) => b.id === id);
+
+  /* ---------- 진행 상황 ---------- */
+  function sheetKeys(sheet) {
+    const keys = [];
+    sheet.blocks.forEach((b) => {
+      if (b.type === 'field' || b.type === 'q') keys.push(fkey(sheet.id, b.id));
+      if (b.type === 'table') b.rows.forEach((row, r) => b.cols.forEach((col, c) => { if (c > 0) keys.push(ckey(sheet.id, b.id, r, c)); }));
+    });
+    return keys;
+  }
+  function progress(sheet, data = D()) {
+    const keys = sheetKeys(sheet);
+    const filled = keys.filter((k) => String(data[k] ?? '').trim() !== '').length;
+    return { filled, total: keys.length, ratio: keys.length ? filled / keys.length : 0 };
+  }
+
+  /* ---------- 자동 계산 · 점검 ---------- */
+  const chip = (kind, text) => `<span class="chip chip-${kind}">${esc(text)}</span>`;
+  const line = (kind, text) => `<li class="chk chk-${kind}"><span class="dot" aria-hidden="true"></span><span>${text}</span></li>`;
+  const list = (items) => `<ul class="chks">${items.join('')}</ul>`;
+  const bars = (items, max = 100, unit = '%') => `<div class="bars">${items.map((it) => `
+      <div class="bar-row"><span class="bar-label">${esc(it.label)}</span>
+        <span class="bar-track"><span class="bar-fill ${it.cls || ''}" style="width:${Math.max(0, Math.min(100, (it.value / max) * 100))}%"></span></span>
+        <span class="bar-val">${Number.isFinite(it.value) ? fmt(it.value, 1) + unit : '—'}</span></div>`).join('')}</div>`;
+  const stat = (big, small) => `<div class="stat"><b>${big}</b><span>${small}</span></div>`;
+  const stats = (arr) => `<div class="stats">${arr.join('')}</div>`;
+
+  const goalMembers = () => { const g = N('s1', 'goalNum'); return Number.isFinite(g) ? g : NaN; };
+
+  function tableSum(sid, tid, c) {
+    const b = findBlock(sid, tid); if (!b) return NaN;
+    let s = 0, any = false;
+    b.rows.forEach((_, r) => { const n = CN(sid, tid, r, c); if (Number.isFinite(n)) { s += n; any = true; } });
+    return any ? s : NaN;
+  }
+
+  const CALC = {
+    mainSub() {
+      const b = findBlock('s1', 'goals');
+      const picks = b.rows.map((_, r) => C('s1', 'goals', r, 4));
+      const m = picks.filter((p) => p === '주').length, s = picks.filter((p) => p === '부').length;
+      return list([
+        line(m === 1 ? 'ok' : 'bad', `주 목표 ${m}개 ${m === 1 ? '— 좋습니다' : '— 주 목표는 하나만 고르십시오'}`),
+        line(s === 1 ? 'ok' : 'bad', `부 목표 ${s}개 ${s === 1 ? '— 좋습니다' : '— 부 목표도 하나만 고르십시오'}`),
+      ]);
+    },
+    insight() {
+      const b = findBlock('s2', 'ins');
+      const re = /(때|는데|은데|ㄴ데|서 |어서|아서|면서)/;
+      const items = b.rows.map((_, r) => {
+        const t = C('s2', 'ins', r, 1).trim(), ty = C('s2', 'ins', r, 3), src = C('s2', 'ins', r, 2).trim();
+        if (!t) return line('idle', `${r + 1}번 — 아직 비어 있습니다`);
+        const sit = re.test(t);
+        const miss = [!sit && '상황', !src && '근거', !ty && '유형'].filter(Boolean);
+        return line(miss.length ? 'warn' : 'ok', `${r + 1}번 — ${miss.length ? `${miss.join(' · ')}이(가) 보이지 않습니다` : '상황 · 근거 · 유형을 갖췄습니다'}`);
+      });
+      const types = new Set(b.rows.map((_, r) => C('s2', 'ins', r, 3)).filter(Boolean));
+      items.push(line(types.size >= 2 ? 'ok' : 'idle', `유형 ${types.size}가지 사용 (경험 · 가치 · 혜택)`));
+      return list(items);
+    },
+    slogan() {
+      const p = V('s3', 'pick'); const r = { A: 0, B: 1, C: 2 }[p];
+      if (r === undefined) return `<p class="muted">최종 선택안을 고르면 여기에 캠페인명과 슬로건이 나란히 보입니다.</p>`;
+      const name = C('s3', 'opts', r, 1), sl = C('s3', 'opts', r, 2), keep = V('s3', 'keep');
+      const len = (s) => s.replace(/\s/g, '').length;
+      return `<div class="poster"><span class="poster-eyebrow">${esc(p)}안 · 캠페인명</span><strong>${esc(name || '캠페인명 미입력')}</strong><em>${esc(sl || '슬로건 미입력')}</em></div>` +
+        list([
+          line(name && len(name) <= 10 ? 'ok' : 'warn', `캠페인명 ${len(name)}자 (공백 제외) ${len(name) <= 10 ? '' : '— 10자 이내를 권합니다'}`),
+          line(sl && len(sl) <= 20 ? 'ok' : 'warn', `슬로건 ${len(sl)}자 ${len(sl) <= 20 ? '' : '— 20자를 넘으면 게시판에서 읽히지 않습니다'}`),
+          line(keep ? 'ok' : 'idle', keep ? `남길 문장 · "${esc(keep)}"` : '남길 문장이 비어 있습니다'),
+        ]);
+    },
+    story() {
+      const parts = ['p1', 'p2', 'p3', 'p4'].map((id) => V('s4', id).trim());
+      const labels = ['문제', '해결', '고객 경험', '브랜드 가치'];
+      const filled = parts.filter(Boolean).length;
+      return `<p class="calc-sub">네 칸을 이어 읽기 · ${filled}/4칸</p>` +
+        `<div class="readaloud">${parts.map((p, i) => p ? `<span class="ra ra-${i}">${esc(p)}</span>` : `<span class="ra ra-empty">[${labels[i]} 비어 있음]</span>`).join(' ')}</div>`;
+    },
+    channel() {
+      const b = findBlock('s5', 'ch');
+      const rows = b.rows.map((row, r) => ({ label: row.l.replace(/\s*\(.*\)/, ''), use: C('s5', 'ch', r, 1), role: C('s5', 'ch', r, 2), value: CN('s5', 'ch', r, 4) }));
+      const sum = rows.reduce((a, x) => a + (Number.isFinite(x.value) ? x.value : 0), 0);
+      const aw = rows.filter((x) => x.role.trim().startsWith('인지')).reduce((a, x) => a + (x.value || 0), 0);
+      const wrong = rows.filter((x) => x.use === '미사용' && x.value > 0);
+      return bars(rows.map((x) => ({ label: x.label, value: x.value, cls: x.use === '미사용' ? 'off' : '' }))) +
+        list([
+          line(Math.abs(sum - 100) < 0.01 ? 'ok' : 'bad', `예산 비중 합계 ${fmt(sum, 1)}% ${Math.abs(sum - 100) < 0.01 ? '' : '— 100%가 되도록 맞추십시오'}`),
+          line('info', `역할별 비중 · 인지 ${fmt(aw, 1)}% · 관심~전환 ${fmt(sum - aw, 1)}%`),
+          ...wrong.map((x) => line('warn', `${esc(x.label)} — 미사용인데 예산 ${fmt(x.value)}%가 잡혀 있습니다`)),
+        ]);
+    },
+    households() {
+      const hh = N('s5', 'hh'), aw = N('s5', 'aw');
+      if (!Number.isFinite(hh) || !Number.isFinite(aw)) return `<p class="muted">세대수와 인지도 목표를 넣으면 몇 세대가 알아야 하는지 계산합니다.</p>`;
+      const n = hh * aw / 100;
+      return stats([stat(fmt(n) + '세대', `${fmt(hh)}세대 × ${fmt(aw)}% = 캠페인을 알아야 하는 세대`), stat(fmt(n / 12) + '세대', '단지 12곳 기준 한 단지당')]);
+    },
+    imc() {
+      let kws = V('s6', 'kw').split(/[,，·\s]+/).map((s) => s.trim()).filter((s) => s.length >= 2);
+      if (!kws.length) kws = V('s3', 'keep').split(/[,，·\s]+/).map((s) => s.replace(/[^가-힣A-Za-z0-9]/g, '')).filter((s) => s.length >= 2);
+      if (!kws.length) return `<p class="muted">핵심어를 적거나 ③에서 남길 문장을 정하면 단계별로 이어지는지 봅니다.</p>`;
+      const b = findBlock('s6', 'imc');
+      const items = b.rows.map((row, r) => {
+        const msg = C('s6', 'imc', r, 2);
+        if (!msg.trim()) return line('idle', `${esc(row.l)} — 메시지 비어 있음`);
+        const hit = kws.filter((k) => msg.includes(k));
+        return line(hit.length ? 'ok' : 'warn', `${esc(row.l)} — ${hit.length ? hit.map((h) => chip('ok', h)).join(' ') : '핵심어가 보이지 않습니다 · 여기서 끊기지 않는지 확인하십시오'}`);
+      });
+      return `<p class="calc-sub">핵심어 ${kws.map((k) => chip('info', k)).join(' ')}</p>` + list(items);
+    },
+    phase() {
+      const cards = [1, 2, 3].map((c) => CN('s7', 'vis', 0, c)), vis = [1, 2, 3].map((c) => CN('s7', 'vis', 1, c));
+      const sc = cards.reduce((a, x) => a + (x || 0), 0), sv = vis.reduce((a, x) => a + (x || 0), 0);
+      const goal = goalMembers();
+      const share = sc ? (cards[1] || 0) / sc * 100 : NaN;
+      return stats([stat(fmt(sc), '8주 카드 발급 합계'), stat(fmt(sv), '8주 방문 합계'), stat(fmt(share, 0) + '%', '집중기 비중')]) +
+        list([
+          Number.isFinite(goal) ? line(sc >= goal ? 'ok' : 'warn', `① 주 목표 ${fmt(goal)}명 대비 ${sc >= goal ? '충족' : `${fmt(goal - sc)}명 부족`}`) : line('idle', '①에서 주 목표 수치를 넣으면 비교합니다'),
+          line(sv && sc ? 'info' : 'idle', `방문 대비 카드 발급률 ${sv ? fmt(sc / sv * 100, 0) : '—'}%`),
+        ]);
+    },
+    budget() {
+      const total = N('s8', 'total'); const b = findBlock('s8', 'bud');
+      const rows = b.rows.map((row, r) => ({ label: row.l.replace(/\s*※.*/, ''), p: CN('s8', 'bud', r, 1) }));
+      const sum = rows.reduce((a, x) => a + (x.p || 0), 0);
+      const goal = goalMembers();
+      const direct = [2, 3, 4].reduce((a, r) => a + (rows[r].p || 0), 0);
+      const insta = CN('s5', 'ch', 0, 4), apt = CN('s5', 'ch', 3, 4);
+      const table = `<div class="tbl-wrap"><table class="mini"><thead><tr><th>항목</th><th>비중</th><th>금액</th></tr></thead><tbody>${rows.map((x) => `<tr><td>${esc(x.label)}</td><td class="n">${Number.isFinite(x.p) ? fmt(x.p, 1) + '%' : '—'}</td><td class="n">${Number.isFinite(total) && Number.isFinite(x.p) ? fmt(total * x.p / 100) + '원' : '—'}</td></tr>`).join('')}
+        <tr class="sum"><td>합계</td><td class="n">${fmt(sum, 1)}%</td><td class="n">${Number.isFinite(total) ? fmt(total * sum / 100) + '원' : '—'}</td></tr></tbody></table></div>`;
+      return table + stats([
+        stat(Number.isFinite(total / goal) ? won(total / goal) : '—', `1인당 획득 비용 · 총예산 ÷ ${Number.isFinite(goal) ? fmt(goal) : '?'}명`),
+        stat(Number.isFinite(total / goal) ? won(total * direct / 100 / goal) : '—', `직접 획득 예산 기준 · 디지털+지역 매체+멤버십 ${fmt(direct, 1)}%`),
+      ]) + list([
+        line(Math.abs(sum - 100) < 0.01 ? 'ok' : 'bad', `비중 합계 ${fmt(sum, 1)}%`),
+        Number.isFinite(insta) ? line(insta === rows[2].p ? 'ok' : 'warn', `⑤ 인스타 ${fmt(insta)}% ↔ 디지털 광고 ${fmt(rows[2].p)}% ${insta === rows[2].p ? '일치' : '— 서로 맞추십시오'}`) : line('idle', '⑤ 채널 비중을 넣으면 교차 점검합니다'),
+        Number.isFinite(apt) ? line(apt === rows[3].p ? 'ok' : 'warn', `⑤ 아파트 게시판 ${fmt(apt)}% ↔ 지역 매체 ${fmt(rows[3].p)}% ${apt === rows[3].p ? '일치' : '— 서로 맞추십시오'}`) : '',
+        !Number.isFinite(goal) ? line('idle', '①에서 주 목표 수치를 넣으면 1인당 비용을 계산합니다') : '',
+      ]);
+    },
+    kpiMain() {
+      const b = findBlock('s9', 'kpi');
+      const m = b.rows.filter((_, r) => C('s9', 'kpi', r, 1) === '주').length;
+      return list([line(m === 1 ? 'ok' : 'warn', `주 지표 ${m}개 ${m === 1 ? '— 한 단계에 집중했습니다' : '— 주 지표는 하나로 좁히십시오'}`)]);
+    },
+    capacity() {
+      const cap = N('s9', 'coach') * N('s9', 'slots') * N('s9', 'days');
+      const resv = N('s9', 'resv'), walk = N('s9', 'walk'), goal = goalMembers();
+      const tot = (resv || 0) + (walk || 0);
+      return stats([
+        stat(fmt(cap), `예약 피팅 수용량 · ${fmt(N('s9', 'coach'))}명 × ${fmt(N('s9', 'slots'))}타임 × ${fmt(N('s9', 'days'))}일`),
+        stat(Number.isFinite(cap) && resv ? fmt(resv / cap * 100, 0) + '%' : '—', '예약 목표 ÷ 수용량 (가동률)'),
+        stat(fmt(tot), '예약 + 워크인'),
+      ]) + list([
+        Number.isFinite(cap) && resv > cap ? line('bad', '예약 목표가 수용량을 넘습니다 · 코디나 운영일을 늘리십시오') : line(Number.isFinite(cap) ? 'ok' : 'idle', '예약 목표가 수용량 안에 있습니다'),
+        Number.isFinite(goal) ? line(tot >= goal ? 'ok' : 'warn', `① 주 목표 ${fmt(goal)}명 ${tot >= goal ? '충족' : `대비 ${fmt(goal - tot)}명 부족`}`) : '',
+      ]);
+    },
+    onepage(sid) {
+      const isC = state.course === 'campaign';
+      const title = isC ? (() => { const r = { A: 0, B: 1, C: 2 }[V('s3', 'pick')]; return r === undefined ? '' : C('s3', 'opts', r, 1); })() : C('c5', 'cp', 0, 1);
+      const sub = isC ? (() => { const r = { A: 0, B: 1, C: 2 }[V('s3', 'pick')]; return r === undefined ? '' : C('s3', 'opts', r, 2); })() : C('c5', 'cp', 1, 1);
+      const b = findBlock(sid, 'one');
+      return `<div class="onepage">
+        <div class="op-head"><span class="op-eyebrow">${esc(course().code)} · ${esc(state.team || '팀명')} · ${esc(state.author || '작성자')}</span>
+        <h3>${esc(title || '캠페인명')}</h3><p>${esc(sub || '슬로건')}</p></div>
+        <dl>${b.rows.map((row, r) => `<div><dt>${esc(row.l)}</dt><dd>${esc(C(sid, 'one', r, 1)) || '<span class="muted">비어 있음</span>'}</dd></div>`).join('')}</dl></div>`;
+    },
+    presTime(sid, blk) {
+      const sum = tableSum(sid, 'pres', 2);
+      const ok = Number.isFinite(sum) && sum <= blk.limit;
+      return list([line(!Number.isFinite(sum) ? 'idle' : ok ? 'ok' : 'bad', `발표 시간 합계 ${fmt(sum)}${blk.unit} / 제한 ${blk.limit}${blk.unit}${Number.isFinite(sum) && !ok ? ' — 줄이십시오' : ''}`)]);
+    },
+    evalSum(sid, blk) {
+      const b = findBlock(sid, 'ev');
+      const max = blk.max * b.rows.length;
+      const names = ['자체 평가', V(sid, 'teamA') || '팀 A', V(sid, 'teamB') || '팀 B'];
+      const over = [];
+      b.rows.forEach((row, r) => [1, 2, 3].forEach((c) => { const n = CN(sid, 'ev', r, c); if (n > blk.max || n < 0) over.push(`${row.l} · ${names[c - 1]}`); }));
+      return stats([1, 2, 3].map((c) => stat(`${fmt(tableSum(sid, 'ev', c))}<small> / ${max}</small>`, esc(names[c - 1])))) +
+        (over.length ? list(over.map((o) => line('bad', `${esc(o)} — 0~${blk.max}점 사이로 적으십시오`))) : '');
+    },
+    sourceTag() {
+      const b = findBlock('c1', 'c3');
+      const n = b.rows.filter((_, r) => /\[[^\]]+\]/.test(C('c1', 'c3', r, 1))).length;
+      const j = b.rows.filter((_, r) => /\[기획 판단\]/.test(C('c1', 'c3', r, 2))).length;
+      return list([
+        line(n === b.rows.length ? 'ok' : 'warn', `사실 칸 ${n}/${b.rows.length}곳에 출처 종류가 붙어 있습니다`),
+        line(j === b.rows.length ? 'ok' : 'idle', `판단 칸 ${j}/${b.rows.length}곳이 [기획 판단]으로 구분돼 있습니다`),
+      ]);
+    },
+    emotion() {
+      const map = { '+': 1, '0': 0, '−': -1 };
+      const vals = [1, 2, 3, 4, 5].map((c) => map[C('c3', 'emo', 0, c)]);
+      const heads = findBlock('c3', 'jm').cols.slice(1).map((c) => c.h);
+      const W = 520, H = 150, px = (i) => 40 + i * ((W - 80) / 4), py = (v) => 30 + (1 - v) * 45;
+      const pts = vals.map((v, i) => v === undefined ? null : [px(i), py(v)]);
+      const path = pts.filter(Boolean).map((p, i) => `${i ? 'L' : 'M'}${p[0]},${p[1]}`).join(' ');
+      const min = Math.min(...vals.filter((v) => v !== undefined));
+      const lows = vals.map((v, i) => v === min ? heads[i] : null).filter(Boolean);
+      const svg = `<svg class="emo" viewBox="0 0 ${W} ${H}" role="img" aria-label="단계별 감정 곡선">
+        ${[1, 0, -1].map((v) => `<line x1="30" x2="${W - 30}" y1="${py(v)}" y2="${py(v)}" class="grid"/><text x="14" y="${py(v) + 4}" class="axis">${v > 0 ? '+' : v < 0 ? '−' : '0'}</text>`).join('')}
+        ${path ? `<path d="${path}" class="curve" fill="none"/>` : ''}
+        ${pts.map((p, i) => p ? `<circle cx="${p[0]}" cy="${p[1]}" r="6" class="${vals[i] === min ? 'pt low' : 'pt'}"/>` : '').join('')}
+        ${heads.map((h, i) => `<text x="${px(i)}" y="${H - 8}" text-anchor="middle" class="axis">${esc(h)}</text>`).join('')}
+      </svg>`;
+      return `<div class="tbl-wrap">${svg}</div>` + (lows.length && Number.isFinite(min) ? list([line(min < 0 ? 'warn' : 'info', `가장 낮은 단계 · ${lows.map((l) => esc(l)).join(', ')}`)]) : '<p class="muted">단계별 감정을 고르면 곡선이 그려집니다.</p>');
+    },
+    smartCap() {
+      const cap = N('c4', 'staff') * N('c4', 'perDay') * N('c4', 'days');
+      const g1 = N('c4', 'g1'), g2 = N('c4', 'g2'), g3 = N('c4', 'g3');
+      return stats([
+        stat(fmt(cap) + '건', `상담 수용량 · ${fmt(N('c4', 'staff'))}명 × ${fmt(N('c4', 'perDay'))}건 × ${fmt(N('c4', 'days'))}일`),
+        stat(Number.isFinite(g1 / cap) ? fmt(g1 / cap * 100, 0) + '%' : '—', '목표 1 ÷ 수용량'),
+        stat(Number.isFinite(g2 / g1) ? fmt(g2 / g1 * 100, 0) + '%' : '—', '구매 전환 (목표 2 ÷ 목표 1)'),
+        stat(Number.isFinite(g3 / g1) ? fmt(g3 / g1 * 100, 0) + '%' : '—', '재방문 (목표 3 ÷ 목표 1)'),
+      ]) + list([
+        Number.isFinite(g1 / cap) ? line(g1 > cap ? 'bad' : g1 / cap > 0.9 ? 'warn' : 'ok', g1 > cap ? '목표가 수용량을 넘습니다' : g1 / cap > 0.9 ? '여유가 10% 미만입니다 · 휴점·취소를 감안하십시오' : '수용량 안에서 여유가 있습니다') : line('idle', '수용량 입력값을 채우십시오'),
+      ]);
+    },
+    five() {
+      const b = findBlock('c5', 'five');
+      const vals = b.rows.map((_, r) => C('c5', 'five', r, 2)).filter(Boolean);
+      const cnt = {}; vals.forEach((v) => { cnt[v] = (cnt[v] || 0) + 1; });
+      return `<p class="calc-sub">${Object.keys(cnt).length ? Object.entries(cnt).map(([k, v]) => chip(k === '충족' ? 'ok' : k === '미흡' ? 'bad' : 'info', `${k} ${v}`)).join(' ') : '<span class="muted">충족 여부를 고르십시오</span>'}</p>`;
+    },
+    space() {
+      const b = findBlock('c6', 'pg');
+      const prog = tableSum('c6', 'pg', 5), aisle = N('c6', 'aisle'), hall = N('c6', 'hall');
+      const tot = (prog || 0) + (aisle || 0);
+      const stages = new Set(b.rows.map((_, r) => C('c6', 'pg', r, 3)).filter(Boolean));
+      const missing = ['유입', '체류', '전환', '재방문'].filter((s) => !stages.has(s));
+      return bars([...b.rows.map((row, r) => ({ label: C('c6', 'pg', r, 1) || `프로그램 ${row.l}`, value: CN('c6', 'pg', r, 5) })), { label: '통로·대기·지원', value: aisle, cls: 'off' }], hall || 200, '평') +
+        list([
+          line(!Number.isFinite(hall) ? 'idle' : tot <= hall ? 'ok' : 'bad', `프로그램 ${fmt(prog)}평 + 통로 ${fmt(aisle)}평 = ${fmt(tot)}평 / 행사장 ${fmt(hall)}평${tot > hall ? ` — ${fmt(tot - hall)}평 초과` : ''}`),
+          line(missing.length ? 'warn' : 'ok', missing.length ? `빠진 여정 단계 · ${missing.join(', ')}` : '유입 · 체류 · 전환 · 재방문을 모두 다룹니다'),
+        ]);
+    },
+    grid() {
+      const b = findBlock('c7', 'sch');
+      const cells = b.rows.map((_, r) => b.cols.slice(1).map((__, c) => !!C('c7', 'sch', r, c + 1).trim()));
+      return `<div class="tbl-wrap"><table class="heat"><thead><tr><th></th>${b.cols.slice(1).map((c) => `<th>${esc(c.h.split(' ')[0])}</th>`).join('')}</tr></thead><tbody>${b.rows.map((row, r) => `<tr><th>${esc(row.l)}</th>${cells[r].map((f) => `<td class="${f ? 'on' : ''}">${f ? '●' : '·'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` +
+        `<p class="calc-sub">빈 칸(·)은 그 시기에 해당 채널이 멈춰 있다는 뜻입니다.</p>`;
+    },
+    budget2() {
+      const total = N('c8', 'total'); const b = findBlock('c8', 'bud');
+      const rows = b.rows.map((row, r) => ({ label: row.l, ref: CN('c8', 'bud', r, 1), p: CN('c8', 'bud', r, 2) }));
+      const sum = rows.reduce((a, x) => a + (x.p || 0), 0);
+      return `<div class="tbl-wrap"><table class="mini"><thead><tr><th>항목</th><th>원본</th><th>배분</th><th>변화</th><th>금액</th></tr></thead><tbody>${rows.map((x) => {
+        const d = x.p - x.ref;
+        return `<tr><td>${esc(x.label)}</td><td class="n">${fmt(x.ref)}%</td><td class="n">${fmt(x.p, 1)}%</td><td class="n ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${Number.isFinite(d) ? (d > 0 ? '▲' : d < 0 ? '▼' : '') + fmt(Math.abs(d)) : '—'}</td><td class="n">${Number.isFinite(total) && Number.isFinite(x.p) ? fmt(total * x.p / 100) + '원' : '—'}</td></tr>`;
+      }).join('')}<tr class="sum"><td>합계</td><td class="n">${fmt(tableSum('c8', 'bud', 1))}%</td><td class="n">${fmt(sum, 1)}%</td><td></td><td class="n">${Number.isFinite(total) ? fmt(total * sum / 100) + '원' : '—'}</td></tr></tbody></table></div>` +
+        list([line(Math.abs(sum - 100) < 0.01 ? 'ok' : 'bad', `배분 비중 합계 ${fmt(sum, 1)}%`)]);
+    },
+    cut() {
+      const total = N('c8', 'total'), cut = tableSum('c8', 'cut', 1), target = total * 0.2;
+      return stats([stat(won(target), '20% 삭감 목표'), stat(won(cut), '적어 넣은 삭감액'), stat(won(total - (cut || 0)), '삭감 후 예산')]) +
+        list([Number.isFinite(cut) ? line(Math.abs(cut - target) < 1 ? 'ok' : 'warn', Math.abs(cut - target) < 1 ? '삭감액이 정확히 20%입니다' : `${won(Math.abs(target - cut))} ${cut < target ? '더 줄여야 합니다' : '초과 삭감입니다'}`) : line('idle', '항목별 삭감액을 적으십시오')]);
+    },
+    roi() {
+      const cost = Number.isFinite(N('c9', 'cost')) ? N('c9', 'cost') : N('c8', 'total');
+      const gp = N('c9', 'gp') / 100, buyers = N('c9', 'buyers'), inc = N('c9', 'inc');
+      const be = cost / gp;
+      const out = [stat(won(cost), '프로모션 총 비용'), stat(won(be), `손익분기 증분 매출 · 비용 ÷ GP ${fmt(gp * 100)}%`), stat(won(be / buyers), `구매자 1인당 필요한 증분 매출 · ${fmt(buyers)}명`)];
+      if (Number.isFinite(inc)) out.push(stat(fmt((inc * gp - cost) / cost * 100, 1) + '%', 'ROI · (증분 매출 × GP − 비용) ÷ 비용'));
+      return stats(out) + list([line(Number.isFinite(inc) ? 'info' : 'idle', Number.isFinite(inc) ? '실제 증분 매출로 계산한 ROI입니다' : 'ROI는 실제 증분 매출을 확보한 뒤 산출합니다')]);
+    },
+  };
+
+  /* ---------- ⑩ 초안 불러오기 ---------- */
+  function composeDraft() {
+    const j = (...xs) => xs.filter((x) => x && String(x).trim()).join(' · ');
+    const first = (s) => (s || '').split(/(?<=[.다요])\s/)[0];
+    if (state.course === 'campaign') {
+      const r = { A: 0, B: 1, C: 2 }[V('s3', 'pick')];
+      const g = findBlock('s1', 'goals');
+      const main = g.rows.findIndex((_, i) => C('s1', 'goals', i, 4) === '주');
+      const sub = g.rows.findIndex((_, i) => C('s1', 'goals', i, 4) === '부');
+      const ch = findBlock('s5', 'ch').rows.map((row, i) => C('s5', 'ch', i, 1) === '사용' ? `${row.l.replace(/\s*\(.*\)/, '')} ${C('s5', 'ch', i, 4)}%` : null).filter(Boolean).join(' · ');
+      const bud = findBlock('s8', 'bud').rows.map((row, i) => ({ l: row.l.replace(/\s*※.*/, ''), p: CN('s8', 'bud', i, 1) })).sort((a, b) => (b.p || 0) - (a.p || 0))[0];
+      const kpiMain = findBlock('s9', 'kpi').rows.findIndex((_, i) => C('s9', 'kpi', i, 1) === '주');
+      return [
+        j(main >= 0 && `주 목표 — ${C('s1', 'goals', main, 2) || C('s1', 'goals', main, 1)}`, sub >= 0 && `부 목표 — ${C('s1', 'goals', sub, 1)}`),
+        j(V('s1', 'persona'), C('s3', 'steps', 0, 1) || C('s2', 'ins', 0, 1)),
+        r === undefined ? '' : j(`'${C('s3', 'opts', r, 1)}' — ${C('s3', 'opts', r, 2)}`, V('s3', 'keep') && `남길 문장: ${V('s3', 'keep')}`),
+        ['p1', 'p2', 'p3', 'p4'].map((id) => first(V('s4', id))).filter(Boolean).join(' → '),
+        j(ch, V('s3', 'keep') && `IMC 7단계 반복 메시지: '${V('s3', 'keep')}'`),
+        j(C('s7', 'ops', 0, 1), C('s7', 'ops', 1, 1)),
+        j(Number.isFinite(N('s8', 'total')) && `총 ${won(N('s8', 'total'))}`, bud && Number.isFinite(bud.p) && `최대 항목 ${bud.l} ${fmt(bud.p)}%`),
+        j(kpiMain >= 0 && `주 KPI ${C('s9', 'kpi', kpiMain, 2)} ${C('s9', 'kpi', kpiMain, 4)}`, Number.isFinite(N('s9', 'resv')) && `예약 ${fmt(N('s9', 'resv'))} + 워크인 ${fmt(N('s9', 'walk'))}`),
+      ];
+    }
+    const pg = findBlock('c6', 'pg').rows.map((_, i) => C('c6', 'pg', i, 1)).filter(Boolean).join(' → ');
+    const bud = findBlock('c8', 'bud').rows.map((row, i) => `${row.l.split(' ')[0]} ${C('c8', 'bud', i, 2)}%`).join(' · ');
+    return [
+      j(C('c5', 'cp', 0, 1) && `${C('c5', 'cp', 0, 1)} — ${C('c5', 'cp', 1, 1)}`, V('c4', 'period')),
+      j(C('c1', 'imp', 0, 1), C('c1', 'imp', 1, 1)),
+      j(V('c2', 'core'), C('c2', 'per', 0, 1), first(C('c2', 'needs', 0, 1))),
+      j(pg, Number.isFinite(N('c4', 'staff')) && `상담원 ${fmt(N('c4', 'staff'))}명`),
+      j(Number.isFinite(N('c4', 'g1')) && `첫 상담 ${fmt(N('c4', 'g1'))}명`, Number.isFinite(N('c4', 'g2')) && `7일 내 구매 ${fmt(N('c4', 'g2'))}명`, Number.isFinite(N('c4', 'g3')) && `30일 내 재방문 ${fmt(N('c4', 'g3'))}명`),
+      findBlock('c7', 'sch').rows.map((row) => row.l).join(' · '),
+      j(Number.isFinite(N('c8', 'total')) && won(N('c8', 'total')), bud),
+      j(Number.isFinite(N('c9', 'gp')) && `GP ${fmt(N('c9', 'gp'))}% 조건 손익분기 ${won((Number.isFinite(N('c9', 'cost')) ? N('c9', 'cost') : N('c8', 'total')) / (N('c9', 'gp') / 100))}`),
+    ];
+  }
+
+  /* ---------- 렌더링 ---------- */
+  const app = $('#app');
+
+  function inputHTML(key, t, opts, a, labelId) {
+    const v = val(key);
+    const aria = labelId ? `aria-labelledby="${labelId}"` : '';
+    if (t === 'pick') return `<select id="f-${key}" data-k="${key}" ${aria}><option value="">선택</option>${opts.map((o) => `<option ${v === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+    if (t === 'area') return `<textarea id="f-${key}" data-k="${key}" rows="2" ${aria}>${esc(v)}</textarea>`;
+    const cls = t === 'num' || t === 'pct' ? 'n' : '';
+    return `<span class="inwrap ${t === 'pct' ? 'pct' : ''}"><input id="f-${key}" data-k="${key}" class="${cls}" ${t === 'num' || t === 'pct' ? 'inputmode="decimal"' : ''} value="${esc(v)}" ${aria} autocomplete="off"></span>`;
+  }
+  const ansHTML = (a, t) => a === undefined || a === '' ? '' : `<div class="ans" data-a>${t === 'num' && Number.isFinite(num(a)) && num(a) >= 1000 ? fmt(num(a)) : esc(a)}${t === 'pct' ? '%' : ''}</div>`;
+
+  function renderBlock(sheet, b, i) {
+    const sid = sheet.id;
+    if (b.type === 'note') return `<p class="note">${esc(b.text)}</p>`;
+    if (b.type === 'field') {
+      const key = fkey(sid, b.id), lid = `l-${key}`;
+      return `<div class="field ${b.t === 'num' || b.t === 'pick' ? 'field-short' : ''}"><label id="${lid}" for="f-${key}">${esc(b.label)}</label>${b.hint ? `<span class="hint">${esc(b.hint)}</span>` : ''}${inputHTML(key, b.t, b.opts, b.a)}${ansHTML(b.a, b.t)}</div>`;
+    }
+    if (b.type === 'q') {
+      const key = fkey(sid, b.id);
+      return `<div class="field q"><label for="f-${key}"><span class="qmark">Q</span>${esc(b.q)}</label>${inputHTML(key, 'area')}${ansHTML(b.a)}</div>`;
+    }
+    if (b.type === 'table') {
+      const head = `<tr>${b.cols.map((c, ci) => `<th scope="col" class="col-${c.t || 'label'}" id="h-${sid}-${b.id}-${ci}">${esc(c.h)}</th>`).join('')}</tr>`;
+      const body = b.rows.map((row, r) => `<tr><th scope="row">${esc(row.l)}</th>${b.cols.slice(1).map((c, ci) => {
+        const key = ckey(sid, b.id, r, ci + 1);
+        return `<td class="col-${c.t}">${inputHTML(key, c.t, c.opts, row.a?.[ci], `h-${sid}-${b.id}-${ci + 1}`)}${ansHTML(row.a?.[ci], c.t)}</td>`;
+      }).join('')}</tr>`).join('');
+      return `<div class="tbl-wrap sheet-table"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+    }
+    if (b.type === 'calc') return `<section class="calc" data-calc="${b.id}" data-i="${i}" aria-live="polite"><h4>자동 점검</h4><div class="calc-body"></div></section>`;
+    if (b.type === 'draft') return `<div class="draft"><p>앞 워크시트에 적은 내용으로 아래 표의 <b>빈 칸</b>을 채웁니다. 채운 뒤 문장을 다듬으십시오.</p><button type="button" class="btn" data-act="draft">초안 불러오기</button></div>`;
+    return '';
+  }
+
+  function renderNav() {
+    const c = course();
+    $('#nav').innerHTML = c.sheets.map((s) => {
+      const p = progress(s);
+      const st = p.filled === 0 ? 'empty' : p.ratio >= 0.8 ? 'done' : 'doing';
+      const cur = s.id === state.sheet[state.course];
+      return `<li><button type="button" data-sheet="${s.id}" class="nav-item ${cur ? 'cur' : ''}" ${cur ? 'aria-current="page"' : ''}>
+        <span class="nav-no">${s.no}</span><span class="nav-title">${esc(s.title)}</span>
+        <span class="nav-st st-${st}" title="${p.filled}/${p.total}칸"><span style="width:${Math.round(p.ratio * 100)}%"></span></span></button></li>`;
+    }).join('');
+    const all = c.sheets.reduce((a, s) => { const p = progress(s); return [a[0] + p.filled, a[1] + p.total]; }, [0, 0]);
+    $('#overall').textContent = `전체 ${Math.round(all[0] / all[1] * 100)}% 작성`;
+    document.querySelectorAll('[data-course]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.course === state.course));
+  }
+
+  function renderSheet() {
+    const c = course();
+    const sid = state.sheet[state.course];
+    const sheet = findSheet(sid) || c.sheets[0];
+    const idx = c.sheets.indexOf(sheet);
+    const prev = c.sheets[idx - 1], next = c.sheets[idx + 1];
+    $('#case').innerHTML = `<span class="case-code">${esc(c.code)}. ${esc(c.name)}</span><strong>${esc(c.caseTitle)}</strong><span>${esc(c.caseSub)}</span>`;
+    app.innerHTML = `
+      <header class="sheet-head">
+        <p class="sheet-eyebrow">실습 ${sheet.no}</p>
+        <h2>${esc(sheet.title)}</h2>
+        <p class="lead">${esc(sheet.lead)}</p>
+        <p class="byline">팀명 <u>${esc(state.team) || '&nbsp;'.repeat(14)}</u> 작성자 <u>${esc(state.author) || '&nbsp;'.repeat(14)}</u></p>
+        <div class="sheet-tools">
+          <button type="button" class="btn ghost" data-act="fill">이 시트에 모범답안 채우기</button>
+          <button type="button" class="btn ghost danger" data-act="clear">이 시트 비우기</button>
+        </div>
+      </header>
+      <div class="blocks">${sheet.blocks.map((b, i) => renderBlock(sheet, b, i)).join('')}</div>
+      <nav class="pager" aria-label="워크시트 이동">
+        ${prev ? `<button type="button" class="btn ghost" data-sheet="${prev.id}">← ${prev.no} ${esc(prev.title)}</button>` : '<span></span>'}
+        ${next ? `<button type="button" class="btn" data-sheet="${next.id}">${next.no} ${esc(next.title)} →</button>` : '<span></span>'}
+      </nav>`;
+    app.querySelectorAll('textarea').forEach(autosize);
+    runCalcs();
+    renderNav();
+  }
+
+  function runCalcs() {
+    const sheet = findSheet(state.sheet[state.course]);
+    app.querySelectorAll('[data-calc]').forEach((el) => {
+      const blk = sheet.blocks[+el.dataset.i];
+      let html = '';
+      try { html = CALC[blk.id](sheet.id, blk); } catch (e) { html = `<p class="muted">값을 채우면 계산합니다.</p>`; }
+      el.querySelector('.calc-body').innerHTML = html;
+    });
+  }
+
+  function autosize(t) { t.style.height = 'auto'; t.style.height = Math.max(t.scrollHeight + 2, 44) + 'px'; }
+
+  function fillSheet(sheet, onlyEmpty = false) {
+    sheet.blocks.forEach((b) => {
+      if ((b.type === 'field' || b.type === 'q') && b.a !== undefined) { const k = fkey(sheet.id, b.id); if (!onlyEmpty || !val(k)) setVal(k, b.a); }
+      if (b.type === 'table') b.rows.forEach((row, r) => (row.a || []).forEach((a, ci) => { const k = ckey(sheet.id, b.id, r, ci + 1); if (!onlyEmpty || !val(k)) setVal(k, a); }));
+    });
+  }
+  function clearSheet(sheet) { sheetKeys(sheet).forEach((k) => setVal(k, '')); }
+
+  /* ---------- 내보내기 ---------- */
+  function exportText() {
+    const c = course();
+    const out = [`# ${c.code}. ${c.name} — ${c.caseTitle}`, `팀명: ${state.team || '-'} / 작성자: ${state.author || '-'}`, ''];
+    c.sheets.forEach((s) => {
+      out.push(`## 실습 ${s.no} ${s.title}`);
+      s.blocks.forEach((b) => {
+        if (b.type === 'field') out.push(`- ${b.label}: ${V(s.id, b.id) || '(빈 칸)'}`);
+        if (b.type === 'q') out.push(`- Q. ${b.q}\n  ${V(s.id, b.id) || '(빈 칸)'}`);
+        if (b.type === 'table') {
+          out.push('', `| ${b.cols.map((x) => x.h).join(' | ')} |`, `|${b.cols.map(() => '---').join('|')}|`);
+          b.rows.forEach((row, r) => out.push(`| ${[row.l, ...b.cols.slice(1).map((_, ci) => C(s.id, b.id, r, ci + 1).replace(/\n/g, ' ').replace(/\|/g, '/'))].join(' | ')} |`));
+          out.push('');
+        }
+      });
+      out.push('');
+    });
+    return out.join('\n');
+  }
+  const backupCode = () => btoa(unescape(encodeURIComponent(JSON.stringify({ v: 1, team: state.team, author: state.author, data: state.data }))));
+
+  async function copy(text, okMsg, fallbackEl) {
+    try { await navigator.clipboard.writeText(text); flash(okMsg); }
+    catch (e) {
+      if (fallbackEl) { fallbackEl.value = text; fallbackEl.hidden = false; fallbackEl.focus(); fallbackEl.select(); }
+      flash('자동 복사가 막혀 있습니다 · 아래 칸에서 직접 복사하십시오');
+    }
+  }
+
+  let toastTimer;
+  function flash(msg) {
+    const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  /* ---------- 이벤트 ---------- */
+  document.addEventListener('input', (e) => {
+    const k = e.target.dataset?.k;
+    if (k) {
+      setVal(k, e.target.value);
+      if (e.target.tagName === 'TEXTAREA') autosize(e.target);
+      runCalcs(); renderNavLite(); save();
+      return;
+    }
+    if (e.target.id === 'team' || e.target.id === 'author') {
+      state[e.target.id] = e.target.value;
+      app.querySelector('.byline').innerHTML = `팀명 <u>${esc(state.team) || '&nbsp;'.repeat(14)}</u> 작성자 <u>${esc(state.author) || '&nbsp;'.repeat(14)}</u>`;
+      runCalcs(); save();
+    }
+  });
+  document.addEventListener('change', (e) => { if (e.target.tagName === 'SELECT' && e.target.dataset.k) { setVal(e.target.dataset.k, e.target.value); runCalcs(); renderNavLite(); save(); } });
+
+  let navT;
+  function renderNavLite() { clearTimeout(navT); navT = setTimeout(renderNav, 150); }
+
+  let clearArmed = null;
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.sheet) { state.sheet[state.course] = t.dataset.sheet; save(); renderSheet(); window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' }); $('#main').focus({ preventScroll: true }); return; }
+    if (t.dataset.course) { state.course = t.dataset.course; save(); renderSheet(); return; }
+    const sheet = findSheet(state.sheet[state.course]);
+    switch (t.dataset.act) {
+      case 'answers':
+        state.answers = !state.answers; applyAnswers(); save(); break;
+      case 'fill':
+        fillSheet(sheet); save(); renderSheet(); flash('모범답안을 채웠습니다 · 우리 조의 값으로 고쳐 쓰십시오'); break;
+      case 'clear':
+        if (clearArmed !== sheet.id) { clearArmed = sheet.id; t.textContent = '한 번 더 누르면 비웁니다'; t.classList.add('armed'); setTimeout(() => { if (t.isConnected) { t.textContent = '이 시트 비우기'; t.classList.remove('armed'); } clearArmed = null; }, 3000); break; }
+        clearArmed = null; clearSheet(sheet); save(); renderSheet(); flash('이 시트를 비웠습니다'); break;
+      case 'draft': {
+        const d = composeDraft(); let n = 0;
+        d.forEach((txt, r) => { const k = ckey(sheet.id, 'one', r, 1); if (!val(k) && txt) { setVal(k, txt); n++; } });
+        save(); renderSheet(); flash(n ? `빈 칸 ${n}곳을 채웠습니다` : '채울 빈 칸이 없거나 앞 시트가 비어 있습니다'); break;
+      }
+      case 'export': $('#exportPanel').hidden = !$('#exportPanel').hidden; t.setAttribute('aria-expanded', !$('#exportPanel').hidden); break;
+      case 'copyText': copy(exportText(), '전체 내용을 복사했습니다', $('#copyOut')); break;
+      case 'copyCode': copy(backupCode(), '백업 코드를 복사했습니다', $('#copyOut')); break;
+      case 'restore': {
+        try {
+          const o = JSON.parse(decodeURIComponent(escape(atob($('#restoreIn').value.trim()))));
+          if (!o || !o.data) throw new Error();
+          state.data = { campaign: {}, promo: {}, ...o.data }; state.team = o.team || ''; state.author = o.author || '';
+          $('#team').value = state.team; $('#author').value = state.author; $('#restoreIn').value = '';
+          save(); renderSheet(); flash('백업을 불러왔습니다');
+        } catch (err) { flash('백업 코드를 읽지 못했습니다 · 복사한 코드 전체를 붙여 넣으십시오'); }
+        break;
+      }
+      case 'fillAll':
+        course().sheets.forEach((s) => fillSheet(s, true)); save(); renderSheet(); flash('빈 칸을 모두 모범답안으로 채웠습니다'); break;
+    }
+  });
+
+  function applyAnswers() {
+    document.documentElement.classList.toggle('show-ans', state.answers);
+    const b = $('[data-act="answers"]'); b.setAttribute('aria-pressed', state.answers); b.querySelector('span').textContent = state.answers ? '모범답안 숨기기' : '모범답안 보기';
+  }
+
+  /* ---------- 시작 ---------- */
+  $('#team').value = state.team; $('#author').value = state.author;
+  if (/^#(campaign|promo)$/.test(location.hash)) state.course = location.hash.slice(1);
+  applyAnswers();
+  renderSheet();
+})();
+
+</script>
+</body>
+</html>
