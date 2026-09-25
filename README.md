@@ -31,5 +31,5 @@
 
 ## 실행 · 수정
 - `index.html`을 브라우저로 열면 됩니다. `fonts/` 폴더와 함께 두십시오. GitHub Pages에 그대로 올릴 수 있습니다.
-- 미션 · 사이트: `src/cases.js` / 워크시트 · 예시 답안: `src/data.js` / 동작: `src/app.js` / 화면: `src/shell.html`
+- 미션 · 사이트: `src/cases.js` / 워크시트 · 예시 답안: `src/data.js` / 칸 아래 회색 작성 예시: `src/examples.js` / 동작: `src/app.js` / 화면: `src/shell.html`
 - 수정한 뒤 `./build.sh`를 실행하면 `index.html`이 다시 만들어집니다.
