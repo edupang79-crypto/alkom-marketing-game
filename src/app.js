@@ -22,10 +22,10 @@
   const ext = (href, text, cls = 'site-chip') => `<a class="${cls}" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${text}<span class="ext" aria-hidden="true">↗</span></a>`;
 
   /* ---------- 상태 ---------- */
-  let state = { view: 'home', course: 'campaign', mission: null, sheet: { campaign: 's0', promo: 'c1' }, team: '', author: '', instructor: false, answers: true, kw: {}, data: {} };
+  let state = { view: 'home', course: 'campaign', mission: null, sheet: { campaign: 's0', promo: 'c1' }, team: '', teamId: '', author: '', instructor: false, answers: true, kw: {}, data: {}, imports: {}, roomSel: { mode: 'round', sid: '' } };
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    if (raw) { const s = JSON.parse(raw); state = { ...state, ...s, sheet: { ...state.sheet, ...(s.sheet || {}) }, data: s.data || {}, kw: s.kw || {} }; }
+    if (raw) { const s = JSON.parse(raw); state = { ...state, ...s, sheet: { ...state.sheet, ...(s.sheet || {}) }, data: s.data || {}, kw: s.kw || {}, imports: s.imports || {}, roomSel: s.roomSel || { mode: 'round', sid: '' } }; }
   } catch (e) { /* 저장소를 못 쓰면 이번 세션 메모리로만 동작 */ }
   if (!state.instructor) state.course = 'campaign';
 
@@ -39,11 +39,16 @@
 
   const course = () => COURSES[state.course];
   const isCampaign = () => state.course === 'campaign';
-  const cs = () => CASES[state.mission];
-  const scope = () => isCampaign() ? `m-${state.mission || '_'}` : 'promo';
-  const D = () => (state.data[scope()] ||= {});
+  /* 강사방에서 다른 조의 시트를 그릴 때는 viewCtx가 그 조의 데이터와 미션을 대신한다 */
+  let viewCtx = null;
+  let RO = false;
+  const curMission = () => viewCtx ? viewCtx.mission : state.mission;
+  const cs = () => CASES[curMission()];
+  const scopeOf = (teamId, mission) => `${teamId || '_'}/m-${mission || '_'}`;
+  const scope = () => isCampaign() ? scopeOf(state.teamId, state.mission) : 'promo';
+  const D = () => viewCtx ? viewCtx.data : (state.data[scope()] ||= {});
   const val = (key) => D()[key] ?? '';
-  const setVal = (key, v) => { if (v === '' || v == null) delete D()[key]; else D()[key] = v; };
+  const setVal = (key, v) => { if (v === '' || v == null) delete D()[key]; else D()[key] = v; queueSync(key, v); };
   const showAns = () => state.instructor && state.answers;
 
   const fkey = (sid, id) => `${sid}.${id}`;
@@ -73,7 +78,7 @@
       { type: 'field', id: 'goalType', t: 'pick', opts: ['고객층 확보', '인지도'], label: '캠페인 목표 유형 (조가 정함)', hint: `이 점포의 방향 · ${c.goalType}` },
       { type: 'field', id: 'period', t: 'text', label: '캠페인 기간 (1~3개월)', hint: '캠페인은 프로모션보다 기간을 길게 잡고 스토리를 중심에 둡니다', ex: '10/6(월) ~ 11/30(일) · 8주 — 가을 환절기와 결혼식 시즌을 함께 잡음' },
       { type: 'field', id: 'budget', t: 'num', label: '예산 (원 · 가정값)', hint: '점포 매출 규모에 맞게 정합니다. ⑧ 예산 배분의 총예산이 비어 있으면 이 값을 씁니다', ex: '150000000 (가정 · 점포 연매출의 ○.○% 수준)' },
-      { type: 'q', id: 'value', q: state.mission === 'E' ? '이 점포가 손님에게 남길 가치를 한 단어로 쓰면?' : `이 점포의 가치는 "${c.value}"입니다. 우리 조는 손님에게 어떤 한 문장을 남기겠습니까?`, nudge: '고객이 우리 점포를 친구에게 설명할 때 쓰는 한 단어는? 그 단어를 약속하는 문장으로 바꾼다면?' },
+      { type: 'q', id: 'value', q: curMission() === 'E' ? '이 점포가 손님에게 남길 가치를 한 단어로 쓰면?' : `이 점포의 가치는 "${c.value}"입니다. 우리 조는 손님에게 어떤 한 문장을 남기겠습니까?`, nudge: '고객이 우리 점포를 친구에게 설명할 때 쓰는 한 단어는? 그 단어를 약속하는 문장으로 바꾼다면?' },
     ];
     if (c.debate) blocks.push({ type: 'q', id: 'debate', q: `토론 · ${c.debate}`, ex: '필요하다 / 필요 없다 — 이유 한 가지와 그 근거 자료 한 가지를 함께 적습니다' });
     return blocks;
@@ -245,7 +250,7 @@
       const r = pickRow();
       const title = isCampaign() ? (r === undefined ? '' : C('s3', 'opts', r, 1)) : C('c5', 'cp', 0, 1);
       const sub = isCampaign() ? (r === undefined ? '' : C('s3', 'opts', r, 2)) : C('c5', 'cp', 1, 1);
-      const where = isCampaign() && cs() ? `케이스 ${state.mission} · ${cs().full}` : course().code;
+      const where = isCampaign() && cs() ? `케이스 ${curMission()} · ${cs().full}` : course().code;
       const b = findBlock(sid, 'one');
       return `<div class="onepage">
         <div class="op-head"><span class="op-eyebrow">${esc(where)} · ${esc(state.team || '팀명')} · ${esc(state.author || '작성자')}</span>
@@ -393,15 +398,16 @@
 
   function inputHTML(key, t, opts, labelId) {
     const v = val(key);
+    if (RO) return `<div class="ro ${v ? '' : 'ro-empty'}">${v ? esc(v).replace(/\n/g, '<br>') : '—'}</div>`;
     const aria = labelId ? `aria-labelledby="${labelId}"` : '';
     if (t === 'pick') return `<select id="f-${key}" data-k="${key}" ${aria}><option value="">선택</option>${opts.map((o) => `<option ${v === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
     if (t === 'area') return `<textarea id="f-${key}" data-k="${key}" rows="2" ${aria}>${esc(v)}</textarea>`;
     const n = t === 'num' || t === 'pct';
     return `<span class="inwrap ${t === 'pct' ? 'pct' : ''}"><input id="f-${key}" data-k="${key}" class="${n ? 'n' : ''}" ${n ? 'inputmode="decimal"' : ''} value="${esc(v)}" ${aria} autocomplete="off"></span>`;
   }
-  const exHTML = (ex) => ex ? `<div class="ex"><span>예)</span> ${esc(ex)}</div>` : '';
-  const nudgeHTML = (n) => n ? `<details class="nudge"><summary>막히면 힌트</summary><p>${esc(n)}</p></details>` : '';
-  const ansHTML = (a, t) => !showAns() || a === undefined || a === '' ? '' : `<div class="ans">${t === 'num' && Number.isFinite(num(a)) && num(a) >= 1000 ? fmt(num(a)) : esc(a)}${t === 'pct' ? '%' : ''}</div>`;
+  const exHTML = (ex) => ex && !RO ? `<div class="ex"><span>예)</span> ${esc(ex)}</div>` : '';
+  const nudgeHTML = (n) => n && !RO ? `<details class="nudge"><summary>막히면 힌트</summary><p>${esc(n)}</p></details>` : '';
+  const ansHTML = (a, t) => RO || !showAns() || a === undefined || a === '' ? '' : `<div class="ans">${t === 'num' && Number.isFinite(num(a)) && num(a) >= 1000 ? fmt(num(a)) : esc(a)}${t === 'pct' ? '%' : ''}</div>`;
 
   function renderBlock(sheet, b, i) {
     const sid = sheet.id;
@@ -423,8 +429,11 @@
       }).join('')}</tr>`).join('');
       return `<div class="tbl-wrap sheet-table"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
     }
-    if (b.type === 'calc') return `<section class="calc" data-calc="${b.id}" data-i="${i}" aria-live="polite"><h4>자동 점검</h4><div class="calc-body"></div></section>`;
-    if (b.type === 'draft') return `<div class="draft"><p>앞 워크시트에 적은 내용으로 아래 표의 <b>빈 칸</b>을 채웁니다. 채운 뒤 문장을 다듬으십시오.</p><button type="button" class="btn" data-act="draft">초안 불러오기</button></div>`;
+    if (b.type === 'calc') {
+      if (RO) { let h = ''; try { h = CALC[b.id](sid, b); } catch (e) { h = '<p class="muted">값이 비어 있습니다.</p>'; } return `<section class="calc"><h4>자동 점검</h4><div class="calc-body">${h}</div></section>`; }
+      return `<section class="calc" data-calc="${b.id}" data-i="${i}" aria-live="polite"><h4>자동 점검</h4><div class="calc-body"></div></section>`;
+    }
+    if (b.type === 'draft') return RO ? '' : `<div class="draft"><p>앞 워크시트에 적은 내용으로 아래 표의 <b>빈 칸</b>을 채웁니다. 채운 뒤 문장을 다듬으십시오.</p><button type="button" class="btn" data-act="draft">초안 불러오기</button></div>`;
     return '';
   }
 
@@ -435,7 +444,7 @@
       return `<tr><td>${esc(f[0])}</td><td><b>${esc(f[1])}</b></td><td>${esc(f[2])}</td><td>${src && src[1] ? ext(src[1], esc(f[3]), 'src-link') : esc(f[3])}</td></tr>`;
     }).join('')}</tbody></table></div>` : '';
     return `<div class="caseinfo">
-      <div class="case-value mission-${state.mission}"><span class="cv-label">이 점포의 가치</span><strong>${esc(c.value)}</strong><p>${esc(c.valueText)}</p>
+      <div class="case-value mission-${curMission()}"><span class="cv-label">이 점포의 가치</span><strong>${esc(c.value)}</strong><p>${esc(c.valueText)}</p>
         <p class="cv-dir">${c.directions.map((d) => `<span>${esc(d)}</span>`).join('')}</p></div>
       ${facts}
       <p class="case-links">원문 확인 · ${ext(`https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(c.kw)}`, `네이버 뉴스 "${esc(c.kw)}"`)}${c.namu ? ext(`https://namu.wiki/w/${encodeURIComponent(c.namu)}`, '나무위키 (2차 자료)') : ''}${ext('https://www.lotteshopping.com', '롯데쇼핑 점포 안내')}</p>
@@ -456,11 +465,12 @@
 
   function renderNav() {
     const items = [];
-    if (isCampaign()) items.push(navBtn('home', '◎', '미션 선택', null, state.view === 'home'));
+    if (isCampaign() && roomAllowed()) items.push(navBtn('room', '▦', '강사방', null, state.view === 'room'));
+    if (isCampaign()) items.push(navBtn('home', '◎', state.team ? `${state.team} · 미션 선택` : '조 · 미션 선택', null, state.view === 'home'));
     if (!isCampaign() || state.mission) {
       course().sheets.forEach((s) => {
         const p = progress(s);
-        items.push(navBtn(s.id, s.no, s.title, p, state.view === 'sheet' && state.sheet[state.course] === s.id));
+        items.push(navBtn(s.id, s.no, s.title, p, state.view === 'sheet' && state.sheet[state.course] === s.id, isCampaign() && !unlocked(s.id), isCampaign() && !!val(`done.${s.id}`)));
       });
     }
     items.push(navBtn('sites', '↗', '자료 찾기 · 참고 사이트', null, state.view === 'sites'));
@@ -474,20 +484,23 @@
     else side.innerHTML = `<span class="case-code">강사 참고 · 3-1 프로모션 기획</span><strong>${esc(course().caseTitle)}</strong><span>${esc(course().caseSub)}</span>`;
     side.className = `case ${isCampaign() && state.mission ? 'mission-' + state.mission : ''}`;
   }
-  function navBtn(id, no, title, p, cur) {
+  function navBtn(id, no, title, p, cur, locked = false, done = false) {
     const st = !p ? '' : p.filled === 0 ? 'empty' : p.ratio >= 0.8 ? 'done' : 'doing';
-    const target = id === 'home' || id === 'sites' ? `data-view="${id}"` : `data-sheet="${id}"`;
-    return `<li><button type="button" ${target} class="nav-item ${cur ? 'cur' : ''} ${p ? '' : 'nav-util'}" ${cur ? 'aria-current="page"' : ''}>
-      <span class="nav-no">${no}</span><span class="nav-title">${esc(title)}</span>
+    const target = ['home', 'sites', 'room'].includes(id) ? `data-view="${id}"` : `data-sheet="${id}"`;
+    return `<li><button type="button" ${target} class="nav-item ${cur ? 'cur' : ''} ${p ? '' : 'nav-util'} ${locked ? 'locked' : ''}" ${cur ? 'aria-current="page"' : ''}>
+      <span class="nav-no">${no}</span><span class="nav-title">${esc(title)}${locked ? ' <small>잠김</small>' : done ? ' <small class="ok">제출</small>' : ''}</span>
       ${p ? `<span class="nav-st st-${st}" title="${p.filled}/${p.total}칸"><span style="width:${Math.round(p.ratio * 100)}%"></span></span>` : ''}</button></li>`;
   }
 
   function render() {
     if (isCampaign() && !state.mission && state.view === 'sheet') state.view = 'home';
+    if (state.view === 'room' && !roomAllowed()) state.view = 'home';
+    if (state.view === 'room') state.course = 'campaign';
     document.documentElement.classList.toggle('show-ans', showAns());
     renderTop();
     if (state.view === 'home') renderHome();
     else if (state.view === 'sites') renderSites();
+    else if (state.view === 'room') renderRoom();
     else renderSheet();
     renderNav();
   }
@@ -498,9 +511,16 @@
         <p class="sheet-eyebrow">3-2. 캠페인 기획 실습 · 미션 선택</p>
         <h2>롯데백화점 부산 4개점, 네 개의 다른 캠페인</h2>
         <p class="lead">같은 롯데지만 규모 · 고객 · 처한 상황이 모두 다릅니다. 조별로 한 점포를 고르고, 목표 · 기간 · 예산은 조가 정합니다.</p>
+        ${roundBarHTML()}
       </header>
+      <section class="teampick ${state.teamId ? 'set' : ''}">
+        <h3>${state.teamId ? `우리 조 · ${esc(state.team)}` : '1단계 · 우리 조를 고르십시오'}</h3>
+        <p class="muted">${state.teamId ? '같은 조 조원이 같은 조를 고르면 한 시트를 함께 씁니다. 작성 내용은 강사방에 바로 보입니다.' : '같은 조 조원은 모두 같은 번호를 고릅니다. 고른 뒤 아래에서 미션을 고르십시오.'}</p>
+        <div class="team-grid">${Array.from({ length: TEAM_COUNT }, (_, i) => i + 1).map((n) => `<button type="button" class="team-btn ${state.teamId === 't' + n ? 'cur' : ''}" data-team="${n}">${n}조</button>`).join('')}</div>
+      </section>
+      <h3 class="step-h">${state.teamId ? '2단계 · 미션을 고르십시오' : '미션 미리 보기'}</h3>
       <div class="missions">${['A', 'B', 'C', 'D', 'E'].map((id) => {
-        const c = CASES[id], cur = state.mission === id, has = Object.keys(state.data[`m-${id}`] || {}).length;
+        const c = CASES[id], cur = state.mission === id, has = Object.keys(state.data[scopeOf(state.teamId, id)] || {}).length;
         return `<article class="mission mission-${id} ${cur ? 'cur' : ''}">
           <header><span class="m-letter">${id}</span><div><h3>${esc(c.store)}</h3><span class="m-area">${esc(c.area)}</span></div></header>
           <p class="m-value">"${esc(c.value)}"</p>
@@ -582,8 +602,10 @@
           <button type="button" class="btn ghost danger" data-act="clear">이 시트 비우기</button>
         </div>
         ${ansNote}
+        ${isCampaign() ? roundBarHTML(sheet.id) : ''}
       </header>
-      <div class="blocks">${blocks.map((b, i) => renderBlock(sheet, b, i)).join('')}</div>
+      ${isCampaign() && !unlocked(sheet.id) ? lockedHTML(sheet) : `<div class="blocks">${blocks.map((b, i) => renderBlock(sheet, b, i)).join('')}</div>
+      ${isCampaign() ? `<div id="submitBox" class="submit">${submitHTML(sheet)}</div>` : ''}`}
       <nav class="pager" aria-label="워크시트 이동">
         ${prev ? `<button type="button" class="btn ghost" data-sheet="${prev.id}">← ${prev.no} ${esc(prev.title)}</button>` : isCampaign() ? '<button type="button" class="btn ghost" data-view="home">← 미션 선택</button>' : '<span></span>'}
         ${next ? `<button type="button" class="btn" data-sheet="${next.id}">${next.no} ${esc(next.title)} →</button>` : '<span></span>'}
@@ -634,7 +656,8 @@
     });
     return out.join('\n');
   }
-  const backupCode = () => btoa(unescape(encodeURIComponent(JSON.stringify({ v: 2, team: state.team, author: state.author, mission: state.mission, data: state.data }))));
+  const backupCode = () => btoa(unescape(encodeURIComponent(JSON.stringify({ v: 3, teamId: state.teamId, team: state.team, author: state.author, mission: state.mission, data: state.data }))));
+  const decodeCode = (code) => JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
 
   async function copy(text, okMsg) {
     try { await navigator.clipboard.writeText(text); flash(okMsg); }
@@ -645,6 +668,277 @@
   function flash(msg) {
     const t = $('#toast'); t.textContent = msg; t.classList.add('show');
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  /* ---------- 라운드 · 실시간 공유 · 강사방 ----------
+     db 문서
+       teams/t{n}   { name, mission, author, updatedAt, missions: { A: { data: { "s1|goals|0|1": "…", "done|s1": "ISO" } } } }
+       control/room { round: -1~11, all: bool, endsAt: ISO | null }  — 소유자 · 편집자만 쓴다 */
+  const TEAM_COUNT = 12;
+  const ROUNDS = ['s0', 's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11'];
+  const ROUND_MIN = { s0: 30, s1: 35, s2: 35, s3: 40, s4: 30, s5: 40, s6: 35, s7: 40, s8: 30, s9: 35, s10: 45, s11: 60 };
+  let DB = null, canAdmin = false, control = null, teamsLive = {}, teamUnsub = null, teamsUnsub = null, teamExists = false, syncState = 'off';
+  let writing = Promise.resolve(), flushT = null;
+  const pending = {};
+  const enc = (k) => k.replace(/\./g, '|');
+  const dec = (k) => k.replace(/\|/g, '.');
+  const encAll = (d) => Object.fromEntries(Object.entries(d).map(([k, v]) => [enc(k), v]));
+  const decAll = (d) => Object.fromEntries(Object.entries(d || {}).map(([k, v]) => [dec(k), v]));
+  const roomAllowed = () => state.instructor || canAdmin;
+  const sheetNo = (sid) => COURSES.campaign.sheets.find((s) => s.id === sid)?.no ?? '';
+  const sheetTitle = (sid) => COURSES.campaign.sheets.find((s) => s.id === sid)?.title ?? '';
+  const hhmm = (iso) => { const d = new Date(iso); return Number.isNaN(+d) ? '' : `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+
+  /* 강사가 라운드를 열기 전 시트는 잠긴다. 강사방이 한 번도 라운드를 열지 않았으면(control 없음) 모두 열림 */
+  function unlocked(sid) {
+    if (!control || control.all) return true;
+    return ROUNDS.indexOf(sid) <= control.round;
+  }
+  function remaining() {
+    if (!control?.endsAt) return null;
+    return Math.max(0, Date.parse(control.endsAt) - Date.now());
+  }
+  const mmss = (ms) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+  function roundBarHTML(sid) {
+    if (!control || control.round < 0) return '';
+    const cur = ROUNDS[control.round];
+    if (control.all) return `<p class="roundbar"><b>모든 라운드가 열려 있습니다</b></p>`;
+    const here = !sid || sid === cur;
+    return `<p class="roundbar ${here ? 'live' : ''}"><b>라운드 ${sheetNo(cur)} ${esc(sheetTitle(cur))}</b>${control.endsAt ? `<span>남은 시간 <b class="js-timer">${mmss(remaining())}</b></span>` : '<span>시간 제한 없음</span>'}${sid && !here ? `<button type="button" class="linkish" data-sheet="${cur}">지금 라운드로 가기</button>` : ''}</p>`;
+  }
+  function lockedHTML(sheet) {
+    return `<div class="locked-panel"><strong>라운드 ${sheet.no} · ${esc(sheet.title)}</strong><p>강사가 이 라운드를 열면 작성할 수 있습니다. 제한 시간 ${ROUND_MIN[sheet.id]}분.</p></div>`;
+  }
+  function submitHTML(sheet) {
+    const d = val(`done.${sheet.id}`);
+    const label = sheet.id === 's0' ? '케이스 시트' : `라운드 ${sheet.no}`;
+    return d
+      ? `<p><b class="ok">${label} 제출됨 · ${hhmm(d)}</b> 제출한 뒤에도 고칠 수 있고, 고친 내용도 강사방에 바로 보입니다.</p><button type="button" class="btn ghost" data-act="submit" data-sid="${sheet.id}">다시 제출</button>`
+      : `<p>이 시트를 다 썼으면 제출하십시오. ${DB ? '강사방에 제출 표시가 뜹니다.' : '실시간 공유가 꺼져 있으면 내보내기 · 백업에서 제출 코드를 복사해 강사에게 보냅니다.'}</p><button type="button" class="btn" data-act="submit" data-sid="${sheet.id}">${label} 제출하기</button>`;
+  }
+  function tickTimers() {
+    const r = remaining();
+    document.querySelectorAll('.js-timer').forEach((el) => { el.textContent = r === null ? '—' : mmss(r); el.classList.toggle('late', r === 0); });
+  }
+  function setSync(st) {
+    syncState = st;
+    const el = $('#syncState'); if (!el) return;
+    el.hidden = st === 'off';
+    el.className = `sync sync-${st}`;
+    el.textContent = { ok: '강사방과 연결됨', saving: '저장 중', err: '저장 안 됨 · 권한 확인', ro: '보기 전용 · 작성은 이 브라우저에만' }[st] || '';
+  }
+
+  function chooseTeam(n) {
+    if (!n) return;
+    state.teamId = `t${n}`; state.team = `${n}조`;
+    $('#team').value = state.teamId;
+    state.mission = null;
+    const found = ['A', 'B', 'C', 'D', 'E'].find((m) => Object.keys(state.data[scopeOf(state.teamId, m)] || {}).length);
+    if (found) state.mission = found;
+    save(); subscribeTeam(); render();
+    flash(`${state.team}을 골랐습니다${state.mission ? '' : ' · 이제 미션을 고르십시오'}`);
+  }
+
+  function queueSync(k, v) {
+    if (!DB || viewCtx || !state.teamId || !state.mission || !isCampaign()) return;
+    pending[k] = v ?? '';
+    clearTimeout(flushT); flushT = setTimeout(flush, 700);
+  }
+  function flush() {
+    const keys = Object.keys(pending); if (!keys.length) return;
+    const data = {}; keys.forEach((k) => { data[enc(k)] = pending[k]; delete pending[k]; });
+    writing = writing.then(() => writeTeam({ missions: { [state.mission]: { data } } })).catch(() => {});
+  }
+  async function writeTeam(patch) {
+    if (!DB || !state.teamId || !state.mission) return;
+    const body = { name: state.team, mission: state.mission, author: state.author, updatedAt: new Date().toISOString(), ...patch };
+    const ref = DB.doc(`teams/${state.teamId}`);
+    setSync('saving');
+    try {
+      if (teamExists) await ref.update(body);
+      else {
+        await ref.set({ ...body, missions: { [state.mission]: { data: encAll(D()) } } });
+        teamExists = true;
+      }
+      setSync('ok');
+    } catch (e) {
+      if (e?.code === 'invalid_argument' && teamExists === false) setSync('ro');
+      else if (e?.code === 'invalid_argument') {
+        try { await ref.set({ ...body, missions: { [state.mission]: { data: encAll(D()) } } }); teamExists = true; setSync('ok'); } catch (e2) { setSync('ro'); }
+      } else setSync('err');
+    }
+  }
+  function subscribeTeam() {
+    if (teamUnsub) { teamUnsub(); teamUnsub = null; }
+    teamExists = false;
+    if (!DB || !state.teamId) return;
+    teamUnsub = DB.doc(`teams/${state.teamId}`).onSnapshot((snap) => {
+      teamExists = snap.exists;
+      if (!snap.exists) { if (state.mission && Object.keys(D()).length) writing = writing.then(() => writeTeam({})).catch(() => {}); return; }
+      const d = snap.data();
+      if (!state.mission && d.mission) { state.mission = d.mission; save(); render(); flash(`${state.team}은 케이스 ${d.mission} 미션을 하고 있습니다`); }
+      const remote = decAll(d.missions?.[state.mission]?.data);
+      const act = document.activeElement?.dataset?.k;
+      const changed = [];
+      const local = state.data[scope()] ||= {};
+      Object.entries(remote).forEach(([k, v]) => {
+        if (k in pending || k === act) return;
+        if ((v ?? '') !== (local[k] ?? '')) { if (v === '' || v == null) delete local[k]; else local[k] = v; changed.push(k); }
+      });
+      if (changed.length) { save(); applyRemote(changed); }
+      if (syncState !== 'saving') setSync('ok');
+    }, () => setSync('err'));
+  }
+  function applyRemote(keys) {
+    if (state.view === 'sheet' && isCampaign()) {
+      keys.forEach((k) => {
+        const el = document.getElementById(`f-${k}`);
+        if (el && el !== document.activeElement) { el.value = val(k); if (el.tagName === 'TEXTAREA') autosize(el); }
+      });
+      const sid = state.sheet.campaign;
+      if (keys.includes(`done.${sid}`) && $('#submitBox')) $('#submitBox').innerHTML = submitHTML(findSheet(sid));
+      runCalcs();
+    }
+    renderNavLite();
+  }
+  async function setControl(next) {
+    if (!DB) { flash('실시간 공유가 꺼져 있어 라운드를 열 수 없습니다'); return; }
+    try { await DB.doc('control/room').set(next); flash(next.all ? '모든 라운드를 열었습니다' : next.round < 0 ? '라운드를 처음으로 되돌렸습니다' : `라운드 ${sheetNo(ROUNDS[next.round])}을 시작했습니다`); }
+    catch (e) { flash('라운드를 바꿀 권한이 없습니다 · 이 앱의 소유자 · 편집자만 바꿀 수 있습니다'); }
+  }
+  function subscribeRoom() {
+    if (teamsUnsub || !DB) return;
+    teamsUnsub = DB.collection('teams').onSnapshot((q) => {
+      teamsLive = {};
+      q.docs.forEach((doc) => {
+        const x = doc.data(); if (!x) return;
+        teamsLive[doc.id] = { id: doc.id, name: String(x.name || doc.id), mission: CASES[x.mission] ? x.mission : null, author: String(x.author || ''), updatedAt: x.updatedAt, data: decAll(x.missions?.[x.mission]?.data), live: true };
+      });
+      if (state.view === 'room') renderRoomBody();
+    }, () => {});
+  }
+  async function connect() {
+    const claude = window.claude;
+    if (!claude?.use) return;
+    try { const u = await claude.use('user'); if (u) canAdmin = !!(await u.canEdit()); } catch (e) { canAdmin = false; }
+    try { DB = await claude.use('db'); } catch (e) { DB = null; }
+    if (!DB) { renderNav(); return; }
+    setSync('ok');
+    DB.doc('control/room').onSnapshot((snap) => {
+      const before = control ? JSON.stringify(control) : '';
+      control = snap.exists ? snap.data() : null;
+      if (before === (control ? JSON.stringify(control) : '')) return;
+      const typing = document.activeElement?.dataset?.k;
+      if (state.view === 'room') { renderRoomControls(); renderRoomBody(); }
+      else if (!typing) render();
+      else renderNav();
+    }, () => {});
+    subscribeTeam();
+    if (state.view === 'room') subscribeRoom();
+    render();
+  }
+
+  /* 강사방 */
+  function roomTeams() {
+    const all = { ...state.imports, ...teamsLive };
+    return Object.values(all).filter((t) => t.mission).sort((a, b) => (parseInt(a.name, 10) || 99) - (parseInt(b.name, 10) || 99) || a.name.localeCompare(b.name));
+  }
+  function withTeam(team, fn) {
+    const prev = [viewCtx, RO];
+    viewCtx = { data: team.data || {}, mission: team.mission }; RO = true;
+    try { return fn(); } finally { [viewCtx, RO] = prev; }
+  }
+  function roSheetHTML(team, sid) {
+    return withTeam(team, () => {
+      const sheet = findSheet(sid);
+      return blocksOf(sheet).filter((b) => b.type !== 'caseinfo' && b.type !== 'draft' && b.type !== 'note').map((b, i) => renderBlock(sheet, b, i)).join('');
+    });
+  }
+  function renderRoom() {
+    subscribeRoom();
+    app.innerHTML = `
+      <header class="sheet-head">
+        <p class="sheet-eyebrow">강사용</p>
+        <h2>강사방</h2>
+        <p class="lead">조별로 라운드마다 쓴 시트가 이곳에 모입니다. 칸을 누르면 그 조의 시트를 보고, 라운드를 고르면 모든 조의 같은 시트를 나란히 봅니다.</p>
+        <p class="room-conn ${DB ? 'on' : 'off'}">${DB ? '실시간 연결됨 · 조가 입력하면 몇 초 안에 반영됩니다' : '실시간 공유가 꺼져 있습니다 · 아래 "제출 코드로 모으기"로 조별 결과를 받으십시오'}</p>
+      </header>
+      <section id="roomControls" class="room-controls"></section>
+      <section id="roomMatrix"></section>
+      <section id="roomView" class="room-view"></section>
+      <details class="import" ${DB ? '' : 'open'}>
+        <summary>제출 코드로 모으기 (실시간 공유가 안 될 때)</summary>
+        <p class="muted">조는 "내보내기 · 백업 → 백업 코드 복사"로 코드를 보내고, 강사는 여기에 붙여 넣습니다. 이 브라우저에만 저장됩니다.</p>
+        <textarea id="importIn" aria-label="제출 코드 붙여 넣기" placeholder="조가 보낸 코드를 붙여 넣으십시오"></textarea>
+        <div class="row"><button type="button" class="btn ghost" data-act="importAdd">제출 코드 추가</button></div>
+        <ul id="importList" class="import-list"></ul>
+      </details>`;
+    renderRoomControls(); renderRoomBody();
+  }
+  function renderRoomControls() {
+    const el = $('#roomControls'); if (!el) return;
+    const cur = control && control.round >= 0 ? ROUNDS[control.round] : null;
+    const sel = state.roomSel.sid || cur || 's0';
+    const status = !control || control.round < 0 ? '아직 라운드를 열지 않았습니다 · 조는 모든 시트를 쓸 수 있습니다' : control.all ? '모든 라운드가 열려 있습니다' : `지금 라운드 ${sheetNo(cur)} ${sheetTitle(cur)}`;
+    el.innerHTML = `
+      <div class="rc-status"><b>${esc(status)}</b>${control?.endsAt && !control.all ? `<span>남은 시간 <b class="js-timer">${mmss(remaining())}</b></span>` : ''}</div>
+      <div class="round-chips">${ROUNDS.map((sid) => `<button type="button" class="rchip ${sid === sel ? 'sel' : ''} ${sid === cur ? 'live' : ''} ${control && !control.all && ROUNDS.indexOf(sid) > control.round ? 'future' : ''}" data-roundpick="${sid}"><span>${sid === 's0' ? '0' : sheetNo(sid)}</span>${esc(sid === 's0' ? '케이스 시트' : sheetTitle(sid))}<small>${ROUND_MIN[sid]}분</small></button>`).join('')}</div>
+      ${canAdmin && DB ? `<div class="rc-actions">
+        <button type="button" class="btn" data-act="roundStart" data-sid="${sel}">${sid0(sel)} 시작 · ${ROUND_MIN[sel]}분 타이머</button>
+        <button type="button" class="btn ghost" data-act="roundPlus" ${control?.endsAt ? '' : 'disabled'}>+5분</button>
+        <button type="button" class="btn ghost" data-act="roundStop" ${control?.endsAt ? '' : 'disabled'}>타이머 끄기</button>
+        <button type="button" class="btn ghost" data-act="roundAll">모든 라운드 열기</button>
+        <button type="button" class="btn ghost danger" data-act="roundReset">처음으로</button>
+      </div><p class="muted">라운드를 시작하면 그 라운드까지만 조 화면에서 열리고, 다음 시트는 잠깁니다.</p>`
+      : `<p class="muted">${DB ? '라운드 시작 · 타이머는 이 앱의 소유자와 편집자만 조작할 수 있습니다.' : '라운드 진행은 실시간 공유가 켜진 화면에서만 됩니다.'}</p>`}`;
+  }
+  const sid0 = (sid) => sid === 's0' ? '케이스 시트' : `라운드 ${sheetNo(sid)}`;
+  const sidFull = (sid) => sid === 's0' ? '케이스 시트' : `라운드 ${sheetNo(sid)} · ${sheetTitle(sid)}`;
+  function renderRoomBody() {
+    const el = $('#roomMatrix'); if (!el) return;
+    const teams = roomTeams();
+    const cur = control && control.round >= 0 && !control.all ? ROUNDS[control.round] : null;
+    el.innerHTML = teams.length ? `<div class="tbl-wrap"><table class="matrix"><thead><tr><th>조</th><th>미션</th>${ROUNDS.map((sid) => `<th class="${sid === cur ? 'live' : ''}">${sid === 's0' ? '0' : sheetNo(sid)}</th>`).join('')}<th>최근 입력</th></tr></thead><tbody>${teams.map((t) => {
+      const cells = withTeam(t, () => ROUNDS.map((sid) => {
+        const p = progress(findSheet(sid)); const d = t.data?.[`done.${sid}`];
+        const cls = d ? 'done' : p.filled ? 'doing' : 'empty';
+        return `<td class="${sid === cur ? 'live' : ''}"><button type="button" class="mcell ${cls}" data-cell="${esc(t.id)}|${sid}" title="${esc(t.name)} · ${esc(sid0(sid))} · ${p.filled}/${p.total}칸${d ? ' · 제출 ' + hhmm(d) : ''}">${d ? '✓' : p.filled ? Math.round(p.ratio * 100) + '%' : '·'}</button></td>`;
+      }).join(''));
+      return `<tr><th scope="row">${esc(t.name)}${t.imported ? ' <small>코드</small>' : ''}</th><td><span class="mbadge mission-${t.mission}">${t.mission}</span> ${esc(CASES[t.mission].store)}</td>${cells}<td class="when">${t.updatedAt ? hhmm(t.updatedAt) : ''}</td></tr>`;
+    }).join('')}</tbody></table></div><p class="legend"><span class="mcell done">✓</span> 제출 <span class="mcell doing">40%</span> 작성 중 <span class="mcell empty">·</span> 아직 없음 — 칸을 누르면 그 조의 시트가 아래에 열립니다</p>`
+      : `<div class="empty-room"><b>아직 들어온 조가 없습니다.</b><p>조가 앱에서 우리 조와 미션을 고르고 쓰기 시작하면 여기에 한 줄씩 생깁니다.</p></div>`;
+    const il = $('#importList');
+    if (il) il.innerHTML = Object.values(state.imports).map((t) => `<li>${esc(t.name)} · 케이스 ${esc(t.mission)} <button type="button" class="linkish" data-act="importDel" data-id="${esc(t.id)}">빼기</button></li>`).join('');
+    renderRoomView();
+  }
+  function renderRoomView() {
+    const el = $('#roomView'); if (!el) return;
+    const teams = roomTeams();
+    const sel = state.roomSel;
+    const tabs = `<div class="seg" role="group" aria-label="보기"><button type="button" data-act="roomMode" data-mode="round" aria-pressed="${sel.mode === 'round'}">라운드별 모든 조</button><button type="button" data-act="roomMode" data-mode="team" aria-pressed="${sel.mode === 'team'}">한 조의 모든 시트</button></div>`;
+    if (!teams.length) { el.innerHTML = ''; return; }
+    if (sel.mode === 'team') {
+      const t = teams.find((x) => x.id === sel.tid) || teams[0];
+      const sids = sel.sid ? [sel.sid, ...ROUNDS.filter((s) => s !== sel.sid)] : ROUNDS;
+      el.innerHTML = `<div class="rv-head">${tabs}<h3>${esc(t.name)} · 케이스 ${t.mission} ${esc(CASES[t.mission].store)}${t.author ? ` <small>작성 ${esc(t.author)}</small>` : ''}</h3>
+        <div class="team-tabs">${teams.map((x) => `<button type="button" class="${x.id === t.id ? 'cur' : ''}" data-cell="${esc(x.id)}|${sel.sid || ''}">${esc(x.name)}</button>`).join('')}</div></div>
+        ${sids.map((sid) => cardHTML(t, sid, true)).join('')}`;
+    } else {
+      const sid = sel.sid || (control && control.round >= 0 && !control.all ? ROUNDS[control.round] : 's0');
+      el.innerHTML = `<div class="rv-head">${tabs}<h3>${esc(sidFull(sid))} <small>조 ${teams.length}개</small></h3></div>
+        <div class="cards">${teams.map((t) => cardHTML(t, sid, false)).join('')}</div>`;
+    }
+    tickTimers();
+  }
+  function cardHTML(t, sid, showSheetName) {
+    const d = t.data?.[`done.${sid}`];
+    const p = withTeam(t, () => progress(findSheet(sid)));
+    return `<article class="rcard mission-${t.mission}">
+      <header><b>${showSheetName ? esc(sidFull(sid)) : esc(t.name)}</b>
+        ${showSheetName ? '' : `<span class="mbadge mission-${t.mission}">${t.mission}</span><span>${esc(CASES[t.mission].store)}</span>`}
+        <span class="rstate ${d ? 'done' : p.filled ? 'doing' : 'empty'}">${d ? `제출 ${hhmm(d)}` : p.filled ? `작성 중 ${Math.round(p.ratio * 100)}%` : '아직 없음'}</span></header>
+      <div class="rbody">${p.filled ? roSheetHTML(t, sid) : '<p class="muted">아직 쓴 내용이 없습니다.</p>'}</div>
+    </article>`;
   }
 
   /* ---------- 이벤트 ---------- */
@@ -661,14 +955,14 @@
     }
     const kw = e.target.dataset?.kw;
     if (kw) { state.kw[kw] = e.target.value.trim(); const a = $(`#kwgo-${kw}`); if (a) a.href = siteUrl(kw); save(); return; }
-    if (e.target.id === 'team' || e.target.id === 'author') {
+    if (e.target.id === 'author') {
       state[e.target.id] = e.target.value;
       const by = app.querySelector('.byline');
       if (by) by.innerHTML = `팀명 <u>${esc(state.team) || '&nbsp;'.repeat(14)}</u> 작성자 <u>${esc(state.author) || '&nbsp;'.repeat(14)}</u>`;
       runCalcs(); save();
     }
   });
-  document.addEventListener('change', (e) => { if (e.target.tagName === 'SELECT' && e.target.dataset.k) { setVal(e.target.dataset.k, e.target.value); runCalcs(); renderNavLite(); save(); } });
+  document.addEventListener('change', (e) => { if (e.target.id === 'team') { chooseTeam(e.target.value.replace('t', '')); return; } if (e.target.tagName === 'SELECT' && e.target.dataset.k) { setVal(e.target.dataset.k, e.target.value); runCalcs(); renderNavLite(); save(); } });
   document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.id === 'instrCode') { e.preventDefault(); $('#instrOn').click(); } });
 
   const goTop = () => { window.scrollTo(0, 0); $('#main').focus({ preventScroll: true }); };
@@ -678,10 +972,14 @@
     const t = e.target.closest('button'); if (!t) return;
     if (t.dataset.view) { state.view = t.dataset.view; save(); render(); goTop(); return; }
     if (t.dataset.sheet) { state.view = 'sheet'; state.sheet[state.course] = t.dataset.sheet; save(); render(); goTop(); return; }
+    if (t.dataset.team) { chooseTeam(t.dataset.team); return; }
+    if (t.dataset.cell) { const [tid, sid] = t.dataset.cell.split('|'); state.roomSel = { mode: 'team', tid, sid }; save(); renderRoomView(); $('#roomView').scrollIntoView({ block: 'start' }); return; }
+    if (t.dataset.roundpick) { state.roomSel = { mode: 'round', sid: t.dataset.roundpick }; save(); renderRoomView(); renderRoomControls(); return; }
     if (t.dataset.mission) {
+      if (!state.teamId) { flash('먼저 우리 조를 고르십시오'); $('.teampick')?.scrollIntoView({ block: 'center' }); return; }
       const changed = state.mission !== t.dataset.mission;
       state.mission = t.dataset.mission; state.view = 'sheet';
-      if (changed) state.sheet.campaign = 's0';
+      if (changed) { state.sheet.campaign = 's0'; if (DB && state.teamId) writing = writing.then(() => writeTeam({})).catch(() => {}); }
       save(); render(); goTop(); flash(`케이스 ${state.mission} · ${cs().store} 미션을 시작합니다`); return;
     }
     if (t.dataset.course) { state.course = t.dataset.course; state.view = state.course === 'promo' ? 'sheet' : (state.mission ? 'sheet' : 'home'); save(); render(); goTop(); return; }
@@ -705,10 +1003,11 @@
       case 'copyCode': copy(backupCode(), '백업 코드를 복사했습니다'); break;
       case 'restore':
         try {
-          const o = JSON.parse(decodeURIComponent(escape(atob($('#restoreIn').value.trim()))));
+          const o = decodeCode($('#restoreIn').value);
           if (!o || !o.data) throw new Error();
-          state.data = o.data; state.team = o.team || ''; state.author = o.author || ''; state.mission = o.mission || state.mission;
-          $('#team').value = state.team; $('#author').value = state.author; $('#restoreIn').value = '';
+          state.data = o.data; state.team = o.team || ''; state.teamId = o.teamId || state.teamId; state.author = o.author || ''; state.mission = o.mission || state.mission;
+          $('#team').value = state.teamId; $('#author').value = state.author; $('#restoreIn').value = '';
+          subscribeTeam();
           save(); render(); flash('백업을 불러왔습니다');
         } catch (err) { flash('백업 코드를 읽지 못했습니다 · 복사한 코드 전체를 붙여 넣으십시오'); }
         break;
@@ -716,12 +1015,40 @@
         if ($('#instrCode').value.trim().toLowerCase() === INSTRUCTOR_CODE) { state.instructor = true; state.answers = true; $('#instrCode').value = ''; save(); render(); flash('강사 모드를 켰습니다'); }
         else flash('강사 코드가 맞지 않습니다');
         break;
+      case 'submit': {
+        const sid = t.dataset.sid;
+        setVal(`done.${sid}`, new Date().toISOString()); save();
+        $('#submitBox').innerHTML = submitHTML(findSheet(sid)); renderNav();
+        flash(DB ? '제출했습니다 · 강사방에 표시됩니다' : '제출 표시를 했습니다 · 내보내기에서 제출 코드를 복사해 강사에게 보내십시오');
+        break;
+      }
+      case 'roundStart': setControl({ round: ROUNDS.indexOf(t.dataset.sid), all: false, endsAt: new Date(Date.now() + ROUND_MIN[t.dataset.sid] * 60000).toISOString() }); break;
+      case 'roundPlus': if (control?.endsAt) setControl({ ...control, endsAt: new Date(Math.max(Date.now(), Date.parse(control.endsAt)) + 5 * 60000).toISOString() }); break;
+      case 'roundStop': if (control) setControl({ ...control, endsAt: null }); break;
+      case 'roundAll': setControl({ round: ROUNDS.length - 1, all: true, endsAt: null }); break;
+      case 'roundReset': setControl({ round: -1, all: false, endsAt: null }); break;
+      case 'roomMode': state.roomSel = { ...state.roomSel, mode: t.dataset.mode }; save(); renderRoomView(); break;
+      case 'importAdd': {
+        try {
+          const o = decodeCode($('#importIn').value);
+          const key = Object.keys(o.data || {}).find((k) => k === scopeOf(o.teamId, o.mission)) || Object.keys(o.data || {}).find((k) => k.endsWith(`m-${o.mission}`));
+          if (!o.mission || !key) throw new Error();
+          const id = o.teamId || `x-${(o.team || 'team').replace(/[^0-9A-Za-z가-힣]/g, '')}`;
+          state.imports[id] = { id, name: o.team || id, mission: o.mission, author: o.author || '', data: o.data[key], updatedAt: new Date().toISOString(), imported: true };
+          $('#importIn').value = ''; save(); renderRoomBody(); flash(`${o.team || id} 제출 코드를 추가했습니다`);
+        } catch (err) { flash('제출 코드를 읽지 못했습니다 · 조가 복사한 코드 전체를 붙여 넣으십시오'); }
+        break;
+      }
+      case 'importDel': delete state.imports[t.dataset.id]; save(); renderRoomBody(); break;
       case 'instrOff': state.instructor = false; state.course = 'campaign'; if (!state.mission) state.view = 'home'; save(); render(); flash('강사 모드를 껐습니다'); break;
     }
   });
 
   /* ---------- 시작 ---------- */
-  $('#team').value = state.team; $('#author').value = state.author;
+  $('#team').innerHTML = `<option value="">선택</option>${Array.from({ length: TEAM_COUNT }, (_, i) => `<option value="t${i + 1}">${i + 1}조</option>`).join('')}`;
+  $('#team').value = state.teamId; $('#author').value = state.author;
   if (location.hash === '#sites') state.view = 'sites';
   render();
+  setInterval(tickTimers, 1000);
+  connect();
 })();
