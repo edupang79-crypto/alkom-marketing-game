@@ -141,6 +141,14 @@ input.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
 .ex span{font-weight:700}
 .sheet-table td .ex{padding:4px 6px 0}
 
+.nudge{font-size:12.5px;padding:4px 2px 0}
+.sheet-table td .nudge{padding:4px 6px 0}
+.nudge summary{cursor:pointer;color:var(--info);font-weight:700;width:max-content;list-style:none;display:inline-flex;align-items:center;gap:4px}
+.nudge summary::-webkit-details-marker{display:none}
+.nudge summary::before{content:"?";width:16px;height:16px;border-radius:50%;border:1.5px solid currentColor;display:inline-grid;place-items:center;font-size:10.5px}
+.nudge[open] summary{color:var(--muted)}
+.nudge p{margin:4px 0 0;padding:6px 10px;border-radius:6px;background:var(--info-bg);color:var(--ink);line-height:1.5}
+
 /* 예시 답안 — 강사용 */
 .ans{display:none;color:var(--pen);font-size:13.5px;line-height:1.55;padding:6px 8px 6px 10px;border-left:3px solid var(--pen);background:var(--pen-bg);border-radius:0 6px 6px 0;font-weight:500}
 .show-ans .ans{display:block}
