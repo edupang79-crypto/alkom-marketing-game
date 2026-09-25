@@ -12,7 +12,7 @@
 @font-face{font-family:"Pretendard Variable";font-weight:45 920;font-style:normal;font-display:swap;src:url("fonts/PretendardVariable.subset.woff2") format("woff2-variations"),url("fonts/PretendardVariable.subset.woff2") format("woff2")}
 :root{
   --paper:#EDEFF3; --sheet:#FFFFFF; --ink:#141C28; --muted:#586473; --line:#D2D8E0; --line-soft:#E5E9EF;
-  --field:#F6F7F9; --focus:#2F5FD0;
+  --field:#F6F7F9; --focus:#2F5FD0; --ex:#9AA3AE;
   --pen:#C4302A; --pen-bg:#FDEEEC; --hl:#FFE680; --hl-ink:#3A2F00;
   --ok:#1F7A4B; --ok-bg:#E1F3E8; --warn:#9A6212; --warn-bg:#FBEFD9; --bad:#B42B24; --bad-bg:#FBE5E3; --info:#2F5FD0; --info-bg:#E5ECFB;
   --mA:#2F5FD0; --mB:#0C8577; --mC:#C06A12; --mD:#7446BE; --mE:#56657A;
@@ -23,7 +23,7 @@
   :root:not([data-theme="light"]){
     color-scheme:dark;
     --paper:#0F141B; --sheet:#171E28; --ink:#E6EAF0; --muted:#9AA5B3; --line:#2D3845; --line-soft:#232C37;
-    --field:#1D2632; --focus:#8AAEF0;
+    --field:#1D2632; --focus:#8AAEF0; --ex:#6B7684;
     --pen:#FF8A80; --pen-bg:#3A1F1E; --hl:#65511A; --hl-ink:#FFF2C6;
     --ok:#6CD49B; --ok-bg:#15301F; --warn:#EAB661; --warn-bg:#35280F; --bad:#FF8C85; --bad-bg:#3A1C1A; --info:#8AAEF0; --info-bg:#1A2A45;
     --mA:#7EA2F2; --mB:#4FC7B6; --mC:#F0A452; --mD:#B391F0; --mE:#A3B0C0;
@@ -33,7 +33,7 @@
 :root[data-theme="dark"]{
   color-scheme:dark;
   --paper:#0F141B; --sheet:#171E28; --ink:#E6EAF0; --muted:#9AA5B3; --line:#2D3845; --line-soft:#232C37;
-  --field:#1D2632; --focus:#8AAEF0;
+  --field:#1D2632; --focus:#8AAEF0; --ex:#6B7684;
   --pen:#FF8A80; --pen-bg:#3A1F1E; --hl:#65511A; --hl-ink:#FFF2C6;
   --ok:#6CD49B; --ok-bg:#15301F; --warn:#EAB661; --warn-bg:#35280F; --bad:#FF8C85; --bad-bg:#3A1C1A; --info:#8AAEF0; --info-bg:#1A2A45;
   --mA:#7EA2F2; --mB:#4FC7B6; --mC:#F0A452; --mD:#B391F0; --mE:#A3B0C0;
@@ -144,6 +144,10 @@ input.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
 .inwrap{position:relative;display:block}
 .inwrap.pct input{padding-right:24px}
 .inwrap.pct::after{content:"%";position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
+
+.ex{color:var(--ex);font-size:12.5px;line-height:1.5;padding:4px 2px 0}
+.ex span{font-weight:700}
+.sheet-table td .ex{padding:4px 6px 0}
 
 /* 예시 답안 — 강사용 */
 .ans{display:none;color:var(--pen);font-size:13.5px;line-height:1.55;padding:6px 8px 6px 10px;border-left:3px solid var(--pen);background:var(--pen-bg);border-radius:0 6px 6px 0;font-weight:500}
@@ -445,10 +449,10 @@ const CASES = {
       ['경쟁', '부산 내 경쟁', '신세계 센텀시티 2025년 2조 2,300억(전국 3위) · 만족도 롯데 3.75 < 신세계 3.83 < 현대 3.85', '테넌트뉴스 · ABC뉴스 2026.7', 2],
     ],
     find: [
-      ['부산 외국인 관광객 수 · 국적별 비중', '부산관광공사 · 한국관광데이터랩', ['bto', 'visitKorea']],
-      ['서면 유동인구 · 시간대별', '부산시 빅데이터 포털', ['busanBig', 'sbiz']],
-      ['부산진구 20~30대 인구', '행안부 주민등록 인구통계', ['jumin', 'kosis']],
-      ['부산본점 공식 인스타·앱 이벤트 최근 3개월', '직접 관찰', ['lotte', 'naverNews']],
+      ['부산 외국인 관광객 수 · 국적별 비중', '부산관광공사 · 한국관광데이터랩', ['bto', 'visitKorea'], ['부산 외국인 관광객 연 ○○만 명 · 일본 ○○% · 대만 ○○% · 중국 ○○% (2025년 기준)', '한국관광데이터랩 > 외국인 방문자 > 부산 · 2026.9.25 조회']],
+      ['서면 유동인구 · 시간대별', '부산시 빅데이터 포털', ['busanBig', 'sbiz'], ['서면역 일대 토요일 12~13시가 가장 많음 · 20~30대 비중 ○○%', '부산 빅데이터 포털 > 유동인구 > 부산진구 · 2026.9.25 조회']],
+      ['부산진구 20~30대 인구', '행안부 주민등록 인구통계', ['jumin', 'kosis'], ['부산진구 인구 ○○만 명 중 20~39세 ○○만 명(○○%)', '행안부 주민등록 인구통계 > 연령별 인구현황 · 2026년 8월 기준']],
+      ['부산본점 공식 인스타·앱 이벤트 최근 3개월', '직접 관찰', ['lotte', 'naverNews'], ['최근 3개월 게시물 ○○건 · 외국인 대상 이벤트 ○건 · 2030 대상 팝업 ○건', '롯데백화점 공식 인스타그램 직접 관찰 · 2026.9.25']],
     ],
     namu: '롯데백화점 부산본점',
   },
@@ -470,10 +474,10 @@ const CASES = {
       ['채널', '지역 채널', '부산 외국인 관광객 500만 시대 · 크루즈 입항 (수치는 조가 확인)', '서울경제 2026 · 부산항만공사', 8],
     ],
     find: [
-      ['중구·서구·사하구 인구 · 연령 구조', '행안부 주민등록 인구통계', ['jumin', 'kosis']],
-      ['남포동·자갈치·용두산 관광객 수', '부산관광공사', ['bto', 'visitKorea']],
-      ['부산항 국제여객터미널 · 크루즈 입항객', '부산항만공사', ['datago', 'naverNews']],
-      ['광복점 아쿠아몰 행사 이력 · 롯데몰 광복 인스타', '직접 관찰', ['lotte', 'naverNews']],
+      ['중구·서구·사하구 인구 · 연령 구조', '행안부 주민등록 인구통계', ['jumin', 'kosis'], ['중구 인구 ○○만 명 · 65세 이상 ○○% (부산 평균보다 ○%p 높음)', '행안부 주민등록 인구통계 · 2026년 8월 기준']],
+      ['남포동·자갈치·용두산 관광객 수', '부산관광공사', ['bto', 'visitKorea'], ['용두산공원 연 방문객 ○○만 명 · 자갈치시장 ○○만 명', '부산관광공사 관광 통계 · 2025년 자료']],
+      ['부산항 국제여객터미널 · 크루즈 입항객', '부산항만공사', ['datago', 'naverNews'], ['2025년 크루즈 입항 ○○회 · 승객 ○○만 명', '부산항만공사 보도자료 · 2026.○.○ 기사']],
+      ['광복점 아쿠아몰 행사 이력 · 롯데몰 광복 인스타', '직접 관찰', ['lotte', 'naverNews'], ['최근 3개월 아쿠아몰 행사 ○건 (예: 분수쇼 · 팝업) · 인스타 팔로워 ○○만', '롯데몰 광복 인스타그램 직접 관찰 · 2026.9.25']],
     ],
     namu: '롯데백화점 광복점',
   },
@@ -496,10 +500,10 @@ const CASES = {
       ['지역', '지역 자산', '동래읍성 역사축제 · 온천장 · 동래시장 (일정·방문객은 조가 확인)', '동래구청', 0],
     ],
     find: [
-      ['동래구·금정구·연제구 인구 · 연령 · 아파트 세대수', '행안부 · 부산시', ['jumin', 'kosis']],
-      ['동래읍성 역사축제 · 온천장 축제 방문객', '동래구청', ['bto', 'naverNews']],
-      ['메가마트 동래점 vs 동래점 주말 방문 관찰', '직접 관찰', ['sbiz']],
-      ['동래점 문화센터 강좌 · 회원 프로그램', '롯데문화센터 홈페이지', ['lotte']],
+      ['동래구·금정구·연제구 인구 · 연령 · 아파트 세대수', '행안부 · 부산시', ['jumin', 'kosis'], ['동래구 인구 ○○만 명 · 50대 ○○% · 럭키아파트 ○○○○세대', '행안부 주민등록 인구통계 · 2026년 8월 기준 / 단지 관리사무소']],
+      ['동래읍성 역사축제 · 온천장 축제 방문객', '동래구청', ['bto', 'naverNews'], ['동래읍성 역사축제 10월 ○일~○일 · 방문객 ○○만 명', '동래구청 보도자료 · 네이버 뉴스 2025.10.○']],
+      ['메가마트 동래점 vs 동래점 주말 방문 관찰', '직접 관찰', ['sbiz'], ['토요일 14~15시 30분 관찰 · 메가마트 입구 ○○명 vs 동래점 입구 ○○명 · 50대 비중 ○○%', '직접 관찰 · 2026.9.○(토) 14:00~14:30']],
+      ['동래점 문화센터 강좌 · 회원 프로그램', '롯데문화센터 홈페이지', ['lotte'], ['가을학기 강좌 ○○개 · 50대 이상 대상 ○개 (예: 건강 · 요리 · 사진)', '롯데문화센터 홈페이지 > 동래점 · 2026.9.25 조회']],
     ],
     namu: '롯데백화점 동래점',
   },
@@ -522,10 +526,10 @@ const CASES = {
       ['채널', '롯데 전사', '롯데백화점 2026년 1분기 매출 8,723억(역대 최고) — 전사는 좋고 이 점포만 어려움', 'CEOScore 2026.6', 5],
     ],
     find: [
-      ['센텀시티 입주 기업 수 · 종사자 수', '부산시 · 해운대구 · 센텀시티 관리', ['kosis', 'datago']],
-      ['해운대구 인구 · 연령 · 우동/재송동 세대', '행안부', ['jumin']],
-      ['신세계 센텀시티 vs 롯데 센텀 평일 점심 방문 관찰', '직접 관찰', ['sbiz', 'naverTrend']],
-      ['사고 이후 언론 · SNS 반응', '네이버 뉴스 · 인스타 검색', ['naverNews', 'blackkiwi']],
+      ['센텀시티 입주 기업 수 · 종사자 수', '부산시 · 해운대구 · 센텀시티 관리', ['kosis', 'datago'], ['센텀시티 입주 기업 ○○○개 · 종사자 ○만 명', '부산시 · 해운대구 통계 · 2025년 기준']],
+      ['해운대구 인구 · 연령 · 우동/재송동 세대', '행안부', ['jumin'], ['해운대구 인구 ○○만 명 · 우동 ○○○○세대 · 30~40대 비중 ○○%', '행안부 주민등록 인구통계 · 2026년 8월 기준']],
+      ['신세계 센텀시티 vs 롯데 센텀 평일 점심 방문 관찰', '직접 관찰', ['sbiz', 'naverTrend'], ['평일 12~13시 관찰 · 신세계 식품관 ○○명 vs 롯데 ○○명 · 직장인 비중 ○○%', '직접 관찰 · 2026.9.○(수) 12:00~12:30']],
+      ['사고 이후 언론 · SNS 반응', '네이버 뉴스 · 인스타 검색', ['naverNews', 'blackkiwi'], ['사고 관련 기사 ○○건 · 부정 반응 키워드: "안전" "불안" · 영업 재개 후 언급량 ○○% 감소', '네이버 뉴스 · 블랙키위 "롯데백화점 센텀시티점" · 2026.9.25 조회']],
     ],
     namu: '롯데백화점 센텀시티점',
   },
@@ -537,15 +541,15 @@ const CASES = {
     directions: ['수치가 없어도 괜찮습니다. "찾아봤는데 공개되지 않음"도 기획안에 적을 수 있는 사실입니다 — 대신 어디를 찾았는지 출처를 남기십시오.'],
     facts: [],
     find: [
-      ['점포 기본 · 개점 · 규모 · 영업시간', '백화점 공식 홈페이지 점포 안내', ['lotte']],
-      ['점포 규모 · 연매출 · 전국 순위 · 전년비', '어패럴뉴스 · 패션비즈 "점포별 매출 순위"', ['apparel', 'fashionbiz', 'dart']],
-      ['상권 · 구·동 인구 · 연령 구조', '행안부 주민등록 인구통계', ['jumin', 'kosis']],
-      ['상권 · 유동인구 · 관광객', '한국관광데이터랩 · 지역 관광공사 · 시 빅데이터 포털', ['visitKorea', 'sbiz', 'datago']],
-      ['고객 · 주 고객층 · 오지 않는 사람', '직접 방문 관찰 (평일 낮·주말 저녁 30분씩) · 네이버 블로그 후기', ['naverTrend', 'blackkiwi']],
-      ['채널 · 인스타 · 유튜브 · 앱', '점포 공식 계정 팔로워 · 최근 3개월 게시물', ['blackkiwi']],
-      ['운영 · 최근 뉴스 (리뉴얼 · 팝업 · 매각)', '네이버 뉴스 "점포명 + 리뉴얼 / 팝업 / 매각"', ['naverNews']],
-      ['경쟁 · 반경 5km 경쟁점', '같은 순위 기사에서 경쟁점 매출 비교', ['apparel', 'fashionbiz']],
-      ['캠페인 조건 · 목표 유형 · 기간 · 예산', '조가 정함 (고객층 확보 또는 인지도 · 1~3개월 · 매출 규모에 맞는 예산)', []],
+      ['점포 기본 · 개점 · 규모 · 영업시간', '백화점 공식 홈페이지 점포 안내', ['lotte'], ['○○○○년 개점 · 연면적 ○○,○○○㎡ · 10:30~20:00 · 월 1회 휴점', '○○백화점 공식 홈페이지 점포 안내 · 2026.9.25 조회']],
+      ['점포 규모 · 연매출 · 전국 순위 · 전년비', '어패럴뉴스 · 패션비즈 "점포별 매출 순위"', ['apparel', 'fashionbiz', 'dart'], ['2025년 매출 ○,○○○억원 · 전국 ○○위 · 전년 대비 +○.○%', '어패럴뉴스 2026.1.○ 점포별 매출 순위 기사']],
+      ['상권 · 구·동 인구 · 연령 구조', '행안부 주민등록 인구통계', ['jumin', 'kosis'], ['○○구 인구 ○○만 명 · 20~30대 ○○% · 50대 이상 ○○%', '행안부 주민등록 인구통계 · 2026년 8월 기준']],
+      ['상권 · 유동인구 · 관광객', '한국관광데이터랩 · 지역 관광공사 · 시 빅데이터 포털', ['visitKorea', 'sbiz', 'datago'], ['주말 유동인구 ○○만 명 · 외국인 방문객 월 ○○만 명', '한국관광데이터랩 · 소상공인 상권정보시스템 · 2026.9.25 조회']],
+      ['고객 · 주 고객층 · 오지 않는 사람', '직접 방문 관찰 (평일 낮·주말 저녁 30분씩) · 네이버 블로그 후기', ['naverTrend', 'blackkiwi'], ['평일 낮은 60대 여성 중심 · 주말 저녁은 가족 단위 · 20대는 거의 보이지 않음', '직접 관찰 평일 14시 · 주말 18시 각 30분 / 네이버 블로그 후기 ○건']],
+      ['채널 · 인스타 · 유튜브 · 앱', '점포 공식 계정 팔로워 · 최근 3개월 게시물', ['blackkiwi'], ['인스타 팔로워 ○○만 · 최근 3개월 게시물 ○○건 · 릴스 평균 조회 ○천', '점포 공식 인스타그램 직접 관찰 · 2026.9.25']],
+      ['운영 · 최근 뉴스 (리뉴얼 · 팝업 · 매각)', '네이버 뉴스 "점포명 + 리뉴얼 / 팝업 / 매각"', ['naverNews'], ['2026.○ 식품관 리뉴얼 · ○○ 팝업스토어 개최', '네이버 뉴스 "○○점 리뉴얼" · ○○일보 2026.○.○']],
+      ['경쟁 · 반경 5km 경쟁점', '같은 순위 기사에서 경쟁점 매출 비교', ['apparel', 'fashionbiz'], ['반경 5km 안 ○○백화점 ○○점 · 매출 ○,○○○억원 (우리 점포의 ○배)', '어패럴뉴스 2026.1.○ 같은 순위 기사']],
+      ['캠페인 조건 · 목표 유형 · 기간 · 예산', '조가 정함 (고객층 확보 또는 인지도 · 1~3개월 · 매출 규모에 맞는 예산)', [], ['고객층 확보 · 10/6~11/30 8주 · 예산 ○억원 (가정)', '조가 정함']],
     ],
   },
 };
@@ -1155,13 +1159,13 @@ const COURSES = {
     const blocks = [
       { type: 'caseinfo' },
       { type: 'table', id: 'find', cols: [{ h: '조가 직접 찾아 채울 것' }, { h: '찾은 값 · 사실', t: 'area' }, { h: '어디서 찾았나 (사이트 · 기사 · 날짜)', t: 'area' }],
-        rows: c.find.map((f) => ({ l: f[0], sub: f[1], sites: f[2] })) },
+        rows: c.find.map((f) => ({ l: f[0], sub: f[1], sites: f[2], ex: f[3] })) },
       { type: 'field', id: 'goalType', t: 'pick', opts: ['고객층 확보', '인지도'], label: '캠페인 목표 유형 (조가 정함)', hint: `이 점포의 방향 · ${c.goalType}` },
-      { type: 'field', id: 'period', t: 'text', label: '캠페인 기간 (1~3개월)', hint: '캠페인은 프로모션보다 기간을 길게 잡고 스토리를 중심에 둡니다' },
-      { type: 'field', id: 'budget', t: 'num', label: '예산 (원 · 가정값)', hint: '점포 매출 규모에 맞게 정합니다. ⑧ 예산 배분의 총예산이 비어 있으면 이 값을 씁니다' },
-      { type: 'q', id: 'value', q: state.mission === 'E' ? '이 점포가 손님에게 남길 가치를 한 단어로 쓰면?' : `이 점포의 가치는 "${c.value}"입니다. 우리 조는 손님에게 어떤 한 문장을 남기겠습니까?` },
+      { type: 'field', id: 'period', t: 'text', label: '캠페인 기간 (1~3개월)', hint: '캠페인은 프로모션보다 기간을 길게 잡고 스토리를 중심에 둡니다', ex: '10/6(월) ~ 11/30(일) · 8주 — 가을 환절기와 결혼식 시즌을 함께 잡음' },
+      { type: 'field', id: 'budget', t: 'num', label: '예산 (원 · 가정값)', hint: '점포 매출 규모에 맞게 정합니다. ⑧ 예산 배분의 총예산이 비어 있으면 이 값을 씁니다', ex: '150000000 (가정 · 점포 연매출의 ○.○% 수준)' },
+      { type: 'q', id: 'value', q: state.mission === 'E' ? '이 점포가 손님에게 남길 가치를 한 단어로 쓰면?' : `이 점포의 가치는 "${c.value}"입니다. 우리 조는 손님에게 어떤 한 문장을 남기겠습니까?`, ex: state.mission === 'E' ? '가까움 — 퇴근길 10분이면 들르는 백화점' : '"○○점은 ○○처럼 내 ○○을 아는 곳"' },
     ];
-    if (c.debate) blocks.push({ type: 'q', id: 'debate', q: `토론 · ${c.debate}` });
+    if (c.debate) blocks.push({ type: 'q', id: 'debate', q: `토론 · ${c.debate}`, ex: '필요하다 / 필요 없다 — 이유 한 가지와 그 근거 자료 한 가지를 함께 적습니다' });
     return blocks;
   }
   const blocksOf = (sheet) => sheet.dynamic ? caseBlocks() : sheet.blocks;
@@ -1485,6 +1489,7 @@ const COURSES = {
     const n = t === 'num' || t === 'pct';
     return `<span class="inwrap ${t === 'pct' ? 'pct' : ''}"><input id="f-${key}" data-k="${key}" class="${n ? 'n' : ''}" ${n ? 'inputmode="decimal"' : ''} value="${esc(v)}" ${aria} autocomplete="off"></span>`;
   }
+  const exHTML = (ex) => ex ? `<div class="ex"><span>예)</span> ${esc(ex)}</div>` : '';
   const ansHTML = (a, t) => !showAns() || a === undefined || a === '' ? '' : `<div class="ans">${t === 'num' && Number.isFinite(num(a)) && num(a) >= 1000 ? fmt(num(a)) : esc(a)}${t === 'pct' ? '%' : ''}</div>`;
 
   function renderBlock(sheet, b, i) {
@@ -1493,17 +1498,17 @@ const COURSES = {
     if (b.type === 'caseinfo') return caseInfoHTML();
     if (b.type === 'field') {
       const key = fkey(sid, b.id);
-      return `<div class="field ${b.t === 'num' || b.t === 'pick' ? 'field-short' : ''}"><label id="l-${key}" for="f-${key}">${esc(b.label)}</label>${b.hint ? `<span class="hint">${esc(b.hint)}</span>` : ''}${inputHTML(key, b.t, b.opts)}${ansHTML(b.a, b.t)}</div>`;
+      return `<div class="field ${b.t === 'num' || b.t === 'pick' ? 'field-short' : ''}"><label id="l-${key}" for="f-${key}">${esc(b.label)}</label>${b.hint ? `<span class="hint">${esc(b.hint)}</span>` : ''}${inputHTML(key, b.t, b.opts)}${exHTML(b.ex)}${ansHTML(b.a, b.t)}</div>`;
     }
     if (b.type === 'q') {
       const key = fkey(sid, b.id);
-      return `<div class="field q"><label for="f-${key}"><span class="qmark">Q</span><span>${esc(b.q)}</span></label>${inputHTML(key, 'area')}${ansHTML(b.a)}</div>`;
+      return `<div class="field q"><label for="f-${key}"><span class="qmark">Q</span><span>${esc(b.q)}</span></label>${inputHTML(key, 'area')}${exHTML(b.ex)}${ansHTML(b.a)}</div>`;
     }
     if (b.type === 'table') {
       const head = `<tr>${b.cols.map((c, ci) => `<th scope="col" class="col-${c.t || 'label'}" id="h-${sid}-${b.id}-${ci}">${esc(c.h)}</th>`).join('')}</tr>`;
       const body = b.rows.map((row, r) => `<tr><th scope="row">${esc(row.l)}${row.sub ? `<span class="row-sub">${esc(row.sub)}</span>` : ''}${row.sites && row.sites.length ? `<span class="row-sites">${siteChips(row.sites)}</span>` : ''}</th>${b.cols.slice(1).map((c, ci) => {
         const key = ckey(sid, b.id, r, ci + 1);
-        return `<td class="col-${c.t}">${inputHTML(key, c.t, c.opts, `h-${sid}-${b.id}-${ci + 1}`)}${ansHTML(row.a?.[ci], c.t)}</td>`;
+        return `<td class="col-${c.t}">${inputHTML(key, c.t, c.opts, `h-${sid}-${b.id}-${ci + 1}`)}${exHTML(row.ex?.[ci])}${ansHTML(row.a?.[ci], c.t)}</td>`;
       }).join('')}</tr>`).join('');
       return `<div class="tbl-wrap sheet-table"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
     }

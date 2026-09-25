@@ -4,7 +4,7 @@
 @font-face{font-family:"Pretendard Variable";font-weight:45 920;font-style:normal;font-display:swap;src:url("__PRETENDARD_SRC__") format("woff2-variations"),url("__PRETENDARD_SRC__") format("woff2")}
 :root{
   --paper:#EDEFF3; --sheet:#FFFFFF; --ink:#141C28; --muted:#586473; --line:#D2D8E0; --line-soft:#E5E9EF;
-  --field:#F6F7F9; --focus:#2F5FD0;
+  --field:#F6F7F9; --focus:#2F5FD0; --ex:#9AA3AE;
   --pen:#C4302A; --pen-bg:#FDEEEC; --hl:#FFE680; --hl-ink:#3A2F00;
   --ok:#1F7A4B; --ok-bg:#E1F3E8; --warn:#9A6212; --warn-bg:#FBEFD9; --bad:#B42B24; --bad-bg:#FBE5E3; --info:#2F5FD0; --info-bg:#E5ECFB;
   --mA:#2F5FD0; --mB:#0C8577; --mC:#C06A12; --mD:#7446BE; --mE:#56657A;
@@ -15,7 +15,7 @@
   :root:not([data-theme="light"]){
     color-scheme:dark;
     --paper:#0F141B; --sheet:#171E28; --ink:#E6EAF0; --muted:#9AA5B3; --line:#2D3845; --line-soft:#232C37;
-    --field:#1D2632; --focus:#8AAEF0;
+    --field:#1D2632; --focus:#8AAEF0; --ex:#6B7684;
     --pen:#FF8A80; --pen-bg:#3A1F1E; --hl:#65511A; --hl-ink:#FFF2C6;
     --ok:#6CD49B; --ok-bg:#15301F; --warn:#EAB661; --warn-bg:#35280F; --bad:#FF8C85; --bad-bg:#3A1C1A; --info:#8AAEF0; --info-bg:#1A2A45;
     --mA:#7EA2F2; --mB:#4FC7B6; --mC:#F0A452; --mD:#B391F0; --mE:#A3B0C0;
@@ -25,7 +25,7 @@
 :root[data-theme="dark"]{
   color-scheme:dark;
   --paper:#0F141B; --sheet:#171E28; --ink:#E6EAF0; --muted:#9AA5B3; --line:#2D3845; --line-soft:#232C37;
-  --field:#1D2632; --focus:#8AAEF0;
+  --field:#1D2632; --focus:#8AAEF0; --ex:#6B7684;
   --pen:#FF8A80; --pen-bg:#3A1F1E; --hl:#65511A; --hl-ink:#FFF2C6;
   --ok:#6CD49B; --ok-bg:#15301F; --warn:#EAB661; --warn-bg:#35280F; --bad:#FF8C85; --bad-bg:#3A1C1A; --info:#8AAEF0; --info-bg:#1A2A45;
   --mA:#7EA2F2; --mB:#4FC7B6; --mC:#F0A452; --mD:#B391F0; --mE:#A3B0C0;
@@ -136,6 +136,10 @@ input.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
 .inwrap{position:relative;display:block}
 .inwrap.pct input{padding-right:24px}
 .inwrap.pct::after{content:"%";position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
+
+.ex{color:var(--ex);font-size:12.5px;line-height:1.5;padding:4px 2px 0}
+.ex span{font-weight:700}
+.sheet-table td .ex{padding:4px 6px 0}
 
 /* 예시 답안 — 강사용 */
 .ans{display:none;color:var(--pen);font-size:13.5px;line-height:1.55;padding:6px 8px 6px 10px;border-left:3px solid var(--pen);background:var(--pen-bg);border-radius:0 6px 6px 0;font-weight:500}

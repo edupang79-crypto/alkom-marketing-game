@@ -69,13 +69,13 @@
     const blocks = [
       { type: 'caseinfo' },
       { type: 'table', id: 'find', cols: [{ h: '조가 직접 찾아 채울 것' }, { h: '찾은 값 · 사실', t: 'area' }, { h: '어디서 찾았나 (사이트 · 기사 · 날짜)', t: 'area' }],
-        rows: c.find.map((f) => ({ l: f[0], sub: f[1], sites: f[2] })) },
+        rows: c.find.map((f) => ({ l: f[0], sub: f[1], sites: f[2], ex: f[3] })) },
       { type: 'field', id: 'goalType', t: 'pick', opts: ['고객층 확보', '인지도'], label: '캠페인 목표 유형 (조가 정함)', hint: `이 점포의 방향 · ${c.goalType}` },
-      { type: 'field', id: 'period', t: 'text', label: '캠페인 기간 (1~3개월)', hint: '캠페인은 프로모션보다 기간을 길게 잡고 스토리를 중심에 둡니다' },
-      { type: 'field', id: 'budget', t: 'num', label: '예산 (원 · 가정값)', hint: '점포 매출 규모에 맞게 정합니다. ⑧ 예산 배분의 총예산이 비어 있으면 이 값을 씁니다' },
-      { type: 'q', id: 'value', q: state.mission === 'E' ? '이 점포가 손님에게 남길 가치를 한 단어로 쓰면?' : `이 점포의 가치는 "${c.value}"입니다. 우리 조는 손님에게 어떤 한 문장을 남기겠습니까?` },
+      { type: 'field', id: 'period', t: 'text', label: '캠페인 기간 (1~3개월)', hint: '캠페인은 프로모션보다 기간을 길게 잡고 스토리를 중심에 둡니다', ex: '10/6(월) ~ 11/30(일) · 8주 — 가을 환절기와 결혼식 시즌을 함께 잡음' },
+      { type: 'field', id: 'budget', t: 'num', label: '예산 (원 · 가정값)', hint: '점포 매출 규모에 맞게 정합니다. ⑧ 예산 배분의 총예산이 비어 있으면 이 값을 씁니다', ex: '150000000 (가정 · 점포 연매출의 ○.○% 수준)' },
+      { type: 'q', id: 'value', q: state.mission === 'E' ? '이 점포가 손님에게 남길 가치를 한 단어로 쓰면?' : `이 점포의 가치는 "${c.value}"입니다. 우리 조는 손님에게 어떤 한 문장을 남기겠습니까?`, ex: state.mission === 'E' ? '가까움 — 퇴근길 10분이면 들르는 백화점' : '"○○점은 ○○처럼 내 ○○을 아는 곳"' },
     ];
-    if (c.debate) blocks.push({ type: 'q', id: 'debate', q: `토론 · ${c.debate}` });
+    if (c.debate) blocks.push({ type: 'q', id: 'debate', q: `토론 · ${c.debate}`, ex: '필요하다 / 필요 없다 — 이유 한 가지와 그 근거 자료 한 가지를 함께 적습니다' });
     return blocks;
   }
   const blocksOf = (sheet) => sheet.dynamic ? caseBlocks() : sheet.blocks;
@@ -399,6 +399,7 @@
     const n = t === 'num' || t === 'pct';
     return `<span class="inwrap ${t === 'pct' ? 'pct' : ''}"><input id="f-${key}" data-k="${key}" class="${n ? 'n' : ''}" ${n ? 'inputmode="decimal"' : ''} value="${esc(v)}" ${aria} autocomplete="off"></span>`;
   }
+  const exHTML = (ex) => ex ? `<div class="ex"><span>예)</span> ${esc(ex)}</div>` : '';
   const ansHTML = (a, t) => !showAns() || a === undefined || a === '' ? '' : `<div class="ans">${t === 'num' && Number.isFinite(num(a)) && num(a) >= 1000 ? fmt(num(a)) : esc(a)}${t === 'pct' ? '%' : ''}</div>`;
 
   function renderBlock(sheet, b, i) {
@@ -407,17 +408,17 @@
     if (b.type === 'caseinfo') return caseInfoHTML();
     if (b.type === 'field') {
       const key = fkey(sid, b.id);
-      return `<div class="field ${b.t === 'num' || b.t === 'pick' ? 'field-short' : ''}"><label id="l-${key}" for="f-${key}">${esc(b.label)}</label>${b.hint ? `<span class="hint">${esc(b.hint)}</span>` : ''}${inputHTML(key, b.t, b.opts)}${ansHTML(b.a, b.t)}</div>`;
+      return `<div class="field ${b.t === 'num' || b.t === 'pick' ? 'field-short' : ''}"><label id="l-${key}" for="f-${key}">${esc(b.label)}</label>${b.hint ? `<span class="hint">${esc(b.hint)}</span>` : ''}${inputHTML(key, b.t, b.opts)}${exHTML(b.ex)}${ansHTML(b.a, b.t)}</div>`;
     }
     if (b.type === 'q') {
       const key = fkey(sid, b.id);
-      return `<div class="field q"><label for="f-${key}"><span class="qmark">Q</span><span>${esc(b.q)}</span></label>${inputHTML(key, 'area')}${ansHTML(b.a)}</div>`;
+      return `<div class="field q"><label for="f-${key}"><span class="qmark">Q</span><span>${esc(b.q)}</span></label>${inputHTML(key, 'area')}${exHTML(b.ex)}${ansHTML(b.a)}</div>`;
     }
     if (b.type === 'table') {
       const head = `<tr>${b.cols.map((c, ci) => `<th scope="col" class="col-${c.t || 'label'}" id="h-${sid}-${b.id}-${ci}">${esc(c.h)}</th>`).join('')}</tr>`;
       const body = b.rows.map((row, r) => `<tr><th scope="row">${esc(row.l)}${row.sub ? `<span class="row-sub">${esc(row.sub)}</span>` : ''}${row.sites && row.sites.length ? `<span class="row-sites">${siteChips(row.sites)}</span>` : ''}</th>${b.cols.slice(1).map((c, ci) => {
         const key = ckey(sid, b.id, r, ci + 1);
-        return `<td class="col-${c.t}">${inputHTML(key, c.t, c.opts, `h-${sid}-${b.id}-${ci + 1}`)}${ansHTML(row.a?.[ci], c.t)}</td>`;
+        return `<td class="col-${c.t}">${inputHTML(key, c.t, c.opts, `h-${sid}-${b.id}-${ci + 1}`)}${exHTML(row.ex?.[ci])}${ansHTML(row.a?.[ci], c.t)}</td>`;
       }).join('')}</tr>`).join('');
       return `<div class="tbl-wrap sheet-table"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
     }
