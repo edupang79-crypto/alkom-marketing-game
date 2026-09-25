@@ -8,6 +8,7 @@ mkdir -p dist
 FONT=fonts/PretendardVariable.subset.woff2
 body() {
   python3 -c 'import sys;p=sys.argv[1];s=open("src/shell.html").read();src=("data:font/woff2;base64,"+__import__("base64").b64encode(open(p,"rb").read()).decode()) if sys.argv[2]=="inline" else p;sys.stdout.write(s.replace("__PRETENDARD_SRC__",src))' "$FONT" "$1"
+  printf '<script>window.TEMPLATE_PPTX_B64="%s";</script>\n' "$(base64 -w0 templates/worksheet-3-2.pptx)"
   printf '<script>\n'; cat src/cases.js src/data.js src/examples.js; printf '\n</script>\n<script>\n'; cat src/app.js; printf '\n</script>\n'
 }
 body inline > dist/artifact.html

@@ -362,6 +362,7 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
 .rbody .row-sites,.rbody .row-sub,.rbody .hint{display:none}
 .ro{font-size:13.5px;line-height:1.55;padding:2px 4px;white-space:normal}
 .ro-empty{color:var(--line)}
+.matrix-tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:10px}
 .import{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:28px}
 .import summary{cursor:pointer;font-weight:800}
 .import textarea{margin-top:8px;font-size:12px;min-height:64px}
@@ -410,8 +411,8 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
   <div id="exportPanel" class="export" hidden>
     <div class="box">
       <h3>제출용 복사</h3>
-      <p>지금 미션의 케이스 시트와 ①~⑪ 전체를 표 형식 텍스트로 복사합니다. 카톡 · 노션 · 한글에 붙여 넣으십시오.</p>
-      <div class="row"><button type="button" class="btn" data-act="copyText">전체 내용 복사</button></div>
+      <p>①~⑪ 전체를 표 형식 텍스트로 복사하거나, 3-2 원본 시트 모양의 PPT로 내려받습니다.</p>
+      <div class="row"><button type="button" class="btn" data-act="copyText">전체 내용 복사</button><button type="button" class="btn ghost" data-act="pptOwn">원본 시트 PPT 내려받기</button></div>
       <textarea id="copyOut" hidden readonly aria-label="복사할 내용"></textarea>
     </div>
     <div class="box">
@@ -441,3 +442,4 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
   </main>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>

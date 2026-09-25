@@ -674,7 +674,7 @@
      db 문서
        teams/t{n}   { name, mission, author, updatedAt, missions: { A: { data: { "s1|goals|0|1": "…", "done|s1": "ISO" } } } }
        control/room { round: -1~11, all: bool, endsAt: ISO | null }  — 소유자 · 편집자만 쓴다 */
-  const TEAM_COUNT = 12;
+  const TEAM_COUNT = 4;
   const ROUNDS = ['s0', 's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11'];
   const ROUND_MIN = { s0: 30, s1: 35, s2: 35, s3: 40, s4: 30, s5: 40, s6: 35, s7: 40, s8: 30, s9: 35, s10: 45, s11: 60 };
   let DB = null, canAdmin = false, control = null, teamsLive = {}, teamUnsub = null, teamsUnsub = null, teamExists = false, syncState = 'off';
@@ -898,13 +898,13 @@
     const el = $('#roomMatrix'); if (!el) return;
     const teams = roomTeams();
     const cur = control && control.round >= 0 && !control.all ? ROUNDS[control.round] : null;
-    el.innerHTML = teams.length ? `<div class="tbl-wrap"><table class="matrix"><thead><tr><th>조</th><th>미션</th>${ROUNDS.map((sid) => `<th class="${sid === cur ? 'live' : ''}">${sid === 's0' ? '0' : sheetNo(sid)}</th>`).join('')}<th>최근 입력</th></tr></thead><tbody>${teams.map((t) => {
+    el.innerHTML = teams.length ? `<div class="matrix-tools"><button type="button" class="btn" data-act="pptAll">모든 조 PPT 내려받기 (zip)</button><span class="muted">첨부하신 3-2 원본 시트에 조가 쓴 내용을 채운 파일입니다</span></div><div class="tbl-wrap"><table class="matrix"><thead><tr><th>조</th><th>미션</th>${ROUNDS.map((sid) => `<th class="${sid === cur ? 'live' : ''}">${sid === 's0' ? '0' : sheetNo(sid)}</th>`).join('')}<th>최근 입력</th><th>PPT</th></tr></thead><tbody>${teams.map((t) => {
       const cells = withTeam(t, () => ROUNDS.map((sid) => {
         const p = progress(findSheet(sid)); const d = t.data?.[`done.${sid}`];
         const cls = d ? 'done' : p.filled ? 'doing' : 'empty';
         return `<td class="${sid === cur ? 'live' : ''}"><button type="button" class="mcell ${cls}" data-cell="${esc(t.id)}|${sid}" title="${esc(t.name)} · ${esc(sid0(sid))} · ${p.filled}/${p.total}칸${d ? ' · 제출 ' + hhmm(d) : ''}">${d ? '✓' : p.filled ? Math.round(p.ratio * 100) + '%' : '·'}</button></td>`;
       }).join(''));
-      return `<tr><th scope="row">${esc(t.name)}${t.imported ? ' <small>코드</small>' : ''}</th><td><span class="mbadge mission-${t.mission}">${t.mission}</span> ${esc(CASES[t.mission].store)}</td>${cells}<td class="when">${t.updatedAt ? hhmm(t.updatedAt) : ''}</td></tr>`;
+      return `<tr><th scope="row">${esc(t.name)}${t.imported ? ' <small>코드</small>' : ''}</th><td><span class="mbadge mission-${t.mission}">${t.mission}</span> ${esc(CASES[t.mission].store)}</td>${cells}<td class="when">${t.updatedAt ? hhmm(t.updatedAt) : ''}</td><td><button type="button" class="linkish" data-act="pptTeam" data-id="${esc(t.id)}">받기</button></td></tr>`;
     }).join('')}</tbody></table></div><p class="legend"><span class="mcell done">✓</span> 제출 <span class="mcell doing">40%</span> 작성 중 <span class="mcell empty">·</span> 아직 없음 — 칸을 누르면 그 조의 시트가 아래에 열립니다</p>`
       : `<div class="empty-room"><b>아직 들어온 조가 없습니다.</b><p>조가 앱에서 우리 조와 미션을 고르고 쓰기 시작하면 여기에 한 줄씩 생깁니다.</p></div>`;
     const il = $('#importList');
@@ -921,6 +921,7 @@
       const t = teams.find((x) => x.id === sel.tid) || teams[0];
       const sids = sel.sid ? [sel.sid, ...ROUNDS.filter((s) => s !== sel.sid)] : ROUNDS;
       el.innerHTML = `<div class="rv-head">${tabs}<h3>${esc(t.name)} · 케이스 ${t.mission} ${esc(CASES[t.mission].store)}${t.author ? ` <small>작성 ${esc(t.author)}</small>` : ''}</h3>
+        <div><button type="button" class="btn ghost" data-act="pptTeam" data-id="${esc(t.id)}">${esc(t.name)} 원본 시트 PPT 내려받기</button></div>
         <div class="team-tabs">${teams.map((x) => `<button type="button" class="${x.id === t.id ? 'cur' : ''}" data-cell="${esc(x.id)}|${sel.sid || ''}">${esc(x.name)}</button>`).join('')}</div></div>
         ${sids.map((sid) => cardHTML(t, sid, true)).join('')}`;
     } else {
@@ -940,6 +941,213 @@
       <div class="rbody">${p.filled ? roSheetHTML(t, sid) : '<p class="muted">아직 쓴 내용이 없습니다.</p>'}</div>
     </article>`;
   }
+
+  /* ---------- 원본 시트 PPT 내려받기 ----------
+     templates/worksheet-3-2.pptx(첨부 원본 빈 시트)를 JSZip으로 열어 표 칸과 답 칸에 조가 쓴 내용을 넣는다.
+     원본의 디자인 · 서체 · 레이아웃은 그대로 두고 글자만 채운다. */
+  const NS_A = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+  const NS_P = 'http://schemas.openxmlformats.org/presentationml/2006/main';
+  const EMU = 914400;
+  const PHASES = ['도입기', '집중기', '마무리기'];
+
+  function slideKit(doc) {
+    const byTag = (el, ns, tag) => Array.from(el.getElementsByTagNameNS(ns, tag));
+    const kids = (el, tag) => Array.from(el.childNodes).filter((n) => n.nodeType === 1 && n.localName === tag);
+    const tables = byTag(doc, NS_A, 'tbl');
+    const shape = (name) => { const c = byTag(doc, NS_P, 'cNvPr').find((n) => n.getAttribute('name') === name); return c ? c.parentNode.parentNode : null; };
+    const textOf = (el) => byTag(el, NS_A, 't').map((t) => t.textContent).join('');
+    function makeRun(src, text, sz) {
+      const r = doc.createElementNS(NS_A, 'a:r');
+      const rPr = doc.createElementNS(NS_A, 'a:rPr');
+      if (src) { Array.from(src.attributes).forEach((a) => rPr.setAttribute(a.name, a.value)); Array.from(src.childNodes).forEach((n) => rPr.appendChild(n.cloneNode(true))); }
+      rPr.setAttribute('lang', 'ko-KR');
+      if (sz) rPr.setAttribute('sz', String(sz));
+      if (!kids(rPr, 'solidFill').length) { const f = doc.createElementNS(NS_A, 'a:solidFill'); const c = doc.createElementNS(NS_A, 'a:srgbClr'); c.setAttribute('val', '131313'); f.appendChild(c); rPr.insertBefore(f, rPr.firstChild); }
+      const t = doc.createElementNS(NS_A, 'a:t'); t.textContent = text;
+      r.appendChild(rPr); r.appendChild(t);
+      return r;
+    }
+    /* txBody 안의 글을 text로 바꾼다. 줄바꿈마다 문단을 새로 만든다. */
+    function setBodyText(body, text, sz) {
+      const ps = kids(body, 'p'); if (!ps.length) return;
+      const src = byTag(body, NS_A, 'rPr')[0] || byTag(body, NS_A, 'endParaRPr')[0] || null;
+      const proto = ps[0].cloneNode(true);
+      Array.from(proto.childNodes).forEach((n) => { if (n.nodeType === 1 && ['r', 'br', 'fld'].includes(n.localName)) proto.removeChild(n); });
+      ps.forEach((p) => body.removeChild(p));
+      String(text).split('\n').forEach((line) => {
+        const p = proto.cloneNode(true);
+        const end = kids(p, 'endParaRPr')[0];
+        p.insertBefore(makeRun(src, line, sz), end || null);
+        body.appendChild(p);
+      });
+    }
+    const cellSize = (text) => text.length > 90 ? 900 : text.length > 45 ? 1000 : null;
+    function cell(ti, r, c, text) {
+      if (text === undefined || text === null || text === '') return;
+      const tbl = tables[ti]; if (!tbl) return;
+      const tr = kids(tbl, 'tr')[r]; if (!tr) return;
+      const tc = kids(tr, 'tc')[c]; if (!tc) return;
+      const body = kids(tc, 'txBody')[0]; if (!body) return;
+      setBodyText(body, String(text), cellSize(String(text)));
+    }
+    const cellText = (ti, r, c) => { const tr = kids(tables[ti] || doc, 'tr')[r]; const tc = tr && kids(tr, 'tc')[c]; return tc ? textOf(tc) : ''; };
+    /* "□ 주 □ 부" 같은 칸에서 고른 항목만 ■ */
+    function check(ti, r, c, pick) {
+      if (!pick) return;
+      const base = cellText(ti, r, c);
+      if (base.includes('□ ' + pick)) cell(ti, r, c, base.replace('□ ' + pick, '■ ' + pick));
+    }
+    function shapeText(name, text, sz) {
+      const sp = shape(name); if (!sp || !text) return;
+      const body = byTag(sp, NS_P, 'txBody')[0]; if (body) setBodyText(body, text, sz);
+    }
+    let nextId = Math.max(0, ...byTag(doc, NS_P, 'cNvPr').map((n) => +n.getAttribute('id') || 0)) + 1;
+    /* 원본의 줄 친 답 칸 위에 글상자를 얹는다 (단위: 인치) */
+    function box(x, y, w, h, text, sz) {
+      if (!text) return;
+      const size = sz || (text.length > 220 ? 900 : text.length > 120 ? 1000 : 1100);
+      const paras = String(text).split('\n').map((line) => `<a:p><a:r><a:rPr lang="ko-KR" sz="${size}" dirty="0"><a:solidFill><a:srgbClr val="1F2A44"/></a:solidFill><a:latin typeface="Pretendard"/><a:ea typeface="Pretendard"/></a:rPr><a:t>${esc(line)}</a:t></a:r></a:p>`).join('');
+      const id = nextId++;
+      const xml = `<p:sp xmlns:p="${NS_P}" xmlns:a="${NS_A}"><p:nvSpPr><p:cNvPr id="${id}" name="Answer ${id}"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="${Math.round(x * EMU)}" y="${Math.round(y * EMU)}"/><a:ext cx="${Math.round(w * EMU)}" cy="${Math.round(h * EMU)}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square" lIns="45720" tIns="18288" rIns="45720" bIns="0" anchor="t"><a:normAutofit/></a:bodyPr><a:lstStyle/>${paras}</p:txBody></p:sp>`;
+      const node = new DOMParser().parseFromString(xml, 'application/xml').documentElement;
+      byTag(doc, NS_P, 'spTree')[0].appendChild(doc.importNode(node, true));
+    }
+    return { cell, check, shapeText, box, cellText };
+  }
+
+  /* 슬라이드 번호(1~11)마다 앱의 칸을 원본 시트의 칸에 옮긴다 */
+  const FILL = {
+    1(k) {
+      for (let r = 0; r < 4; r++) { [1, 2, 3].forEach((c) => k.cell(0, r + 1, c, C('s1', 'goals', r, c))); k.check(0, r + 1, 4, C('s1', 'goals', r, 4)); }
+      for (let r = 0; r < 4; r++) [1, 2].forEach((c) => k.cell(1, r + 1, c, C('s1', 'seg', r, c)));
+    },
+    2(k) {
+      for (let r = 0; r < 3; r++) { k.cell(0, r + 1, 1, C('s2', 'ins', r, 1)); k.cell(0, r + 1, 2, C('s2', 'ins', r, 2)); k.check(0, r + 1, 3, C('s2', 'ins', r, 3)); }
+      k.box(0.78, 6.07, 5.59, 0.9, V('s2', 'strong'));
+      k.box(6.96, 6.07, 5.59, 0.9, V('s2', 'untouched'));
+    },
+    3(k) {
+      for (let r = 0; r < 3; r++) k.cell(0, r + 1, 1, C('s3', 'steps', r, 1));
+      for (let r = 0; r < 3; r++) [1, 2, 3, 4].forEach((c) => k.cell(1, r + 1, c, C('s3', 'opts', r, c)));
+      ['간결한가', '기억하기 쉬운가', '감성을 자극하는가', '브랜드와 연결되는가'].forEach((label, r) => { if (C('s3', 'crit', r, 1) === '충족') k.shapeText(`Text ${11 + r * 2}`, `■  ${label}`); });
+      const pick = V('s3', 'pick'), reason = V('s3', 'reason');
+      if (pick || reason) k.shapeText('Text 18', `최종 선택안과 이유  ${pick ? pick + '안' : ''}${pick && reason ? ' — ' : ''}${reason}`, (reason || '').length > 70 ? 1000 : null);
+    },
+    4(k) {
+      ['p1', 'p2', 'p3', 'p4'].forEach((id, i) => k.box(3.40, 1.99 + i * 1.22, 9.10, 1.02, V('s4', id)));
+    },
+    5(k) {
+      const b = findBlock('s5', 'ch');
+      b.rows.forEach((row, r) => {
+        if (k.cellText(0, r + 1, 0).replace(/\s/g, '') !== row.l.replace(/\s/g, '')) k.cell(0, r + 1, 0, row.l);
+        const use = C('s5', 'ch', r, 1);
+        if (use) k.cell(0, r + 1, 1, use === '사용' ? '■' : '□');
+        k.cell(0, r + 1, 2, C('s5', 'ch', r, 2)); k.cell(0, r + 1, 3, C('s5', 'ch', r, 3));
+        const pct = C('s5', 'ch', r, 4); if (pct) k.cell(0, r + 1, 4, `${pct}%`);
+        k.cell(0, r + 1, 5, C('s5', 'ch', r, 5));
+      });
+      const sum = tableSum('s5', 'ch', 4); if (Number.isFinite(sum)) k.cell(0, 8, 4, `${fmt(sum, 1)}%`);
+    },
+    6(k) {
+      for (let r = 0; r < 7; r++) [1, 2, 3, 4].forEach((c) => k.cell(0, r + 1, c, C('s6', 'imc', r, c)));
+      k.box(0.78, 6.21, 11.77, 0.76, V('s6', 'break'));
+    },
+    7(k) {
+      for (let r = 0; r < 4; r++) [1, 2].forEach((c) => k.cell(0, r + 1, c, C('s7', 'ops', r, c)));
+      [1, 2, 3].forEach((c) => {
+        const d = C('s7', 'ph', 0, c);
+        k.cell(1, 0, c, `${PHASES[c - 1]}${d ? ` (${d})` : ''}`);
+        k.cell(1, 1, c, C('s7', 'ph', 1, c)); k.cell(1, 2, c, C('s7', 'ph', 2, c));
+        const cards = C('s7', 'vis', 0, c), vis = C('s7', 'vis', 1, c);
+        if (cards || vis) k.cell(1, 3, c, [cards && `가입 ${fmt(num(cards))}`, vis && `방문 ${fmt(num(vis))}`].filter(Boolean).join(' · '));
+      });
+      const period = V('s0', 'period'); if (period) k.shapeText('Text 6', `${period} 동안 무엇을 언제 어디서 할지 정하십시오.`);
+      const focus = V('s7', 'focus'); if (focus) k.shapeText('Text 10', `집중 계획 · ${focus}`, focus.length > 90 ? 900 : 1000);
+    },
+    8(k) {
+      const total = campaignBudget(); const b = findBlock('s8', 'bud');
+      b.rows.forEach((row, r) => {
+        if (k.cellText(0, r + 1, 0).replace(/\s/g, '') !== row.l.replace(/\s/g, '')) k.cell(0, r + 1, 0, row.l);
+        const p = CN('s8', 'bud', r, 1);
+        if (Number.isFinite(p)) { k.cell(0, r + 1, 1, `${fmt(p, 1)}%`); if (Number.isFinite(total)) k.cell(0, r + 1, 2, `${fmt(total * p / 100)}원`); }
+        k.cell(0, r + 1, 3, C('s8', 'bud', r, 2)); k.cell(0, r + 1, 4, C('s8', 'bud', r, 3));
+      });
+      const sum = tableSum('s8', 'bud', 1);
+      if (Number.isFinite(sum)) k.cell(0, 8, 1, `${fmt(sum, 1)}%`);
+      if (Number.isFinite(total)) { k.cell(0, 8, 2, `${fmt(total * (Number.isFinite(sum) ? sum : 100) / 100)}원`); k.shapeText('Text 6', `총 ${won(total)}입니다. 채널 믹스(실습 ⑤)의 비중과 어긋나지 않게 맞추십시오.`); }
+      const goal = goalMembers(); if (Number.isFinite(goal)) k.shapeText('Text 14', `신규 회원 ${fmt(goal)}명 목표 기준 · 1인당 획득 비용은 얼마인가`);
+      k.box(0.78, 6.84, 11.77, 0.27, V('s8', 'cpa'), 900);
+    },
+    9(k) {
+      for (let r = 0; r < 5; r++) { k.check(0, r + 1, 1, C('s9', 'kpi', r, 1)); [2, 3, 4, 5].forEach((c) => k.cell(0, r + 1, c, C('s9', 'kpi', r, c))); }
+      k.cell(1, 1, 1, V('s9', 'double')); k.cell(1, 2, 1, V('s9', 'miss'));
+    },
+    10(k) {
+      for (let r = 0; r < 8; r++) k.cell(0, r + 1, 1, C('s10', 'one', r, 1));
+    },
+    11(k, team) {
+      for (let r = 0; r < 4; r++) { k.cell(0, r + 1, 1, C('s11', 'pres', r, 1)); const m = C('s11', 'pres', r, 2); if (m) k.cell(0, r + 1, 2, `${m}분`); }
+      k.cell(1, 0, 1, `${team.name} (자체)`);
+      if (V('s11', 'teamA')) k.cell(1, 0, 2, `팀 ${V('s11', 'teamA')}`);
+      if (V('s11', 'teamB')) k.cell(1, 0, 3, `팀 ${V('s11', 'teamB')}`);
+      for (let r = 0; r < 4; r++) [1, 2, 3, 4].forEach((c) => k.cell(1, r + 1, c, C('s11', 'ev', r, c)));
+      [1, 2, 3].forEach((c) => { const s = tableSum('s11', 'ev', c); if (Number.isFinite(s)) k.cell(1, 5, c, fmt(s)); });
+    },
+  };
+
+  let tplZip = null;
+  async function buildPptx(team) {
+    if (typeof JSZip === 'undefined') throw new Error('nozip');
+    if (!window.TEMPLATE_PPTX_B64) throw new Error('notpl');
+    const zip = await JSZip.loadAsync(window.TEMPLATE_PPTX_B64, { base64: true });
+    const xmls = {};
+    for (let i = 1; i <= 11; i++) xmls[i] = await zip.file(`ppt/slides/slide${i}.xml`).async('string');
+    /* viewCtx를 바꾼 동안에는 await 없이 한 번에 처리한다 (다른 화면 갱신과 섞이지 않게) */
+    const prev = viewCtx;
+    viewCtx = { data: team.data || {}, mission: team.mission };
+    try {
+      for (let i = 1; i <= 11; i++) {
+        const doc = new DOMParser().parseFromString(xmls[i], 'application/xml');
+        const k = slideKit(doc);
+        k.shapeText('Text 9', `팀명   ${team.name || '______________'}          작성자   ${team.author || '______________'}`);
+        FILL[i](k, team);
+        xmls[i] = new XMLSerializer().serializeToString(doc);
+      }
+    } finally { viewCtx = prev; }
+    for (let i = 1; i <= 11; i++) zip.file(`ppt/slides/slide${i}.xml`, xmls[i]);
+    return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+  }
+  const pptName = (team) => `3-2 캠페인 기획 실습_${team.name || '조'}_${team.mission ? CASES[team.mission].store : ''}.pptx`.replace(/[\\/:*?"<>|]/g, '');
+  async function saveFile(filename, blob) {
+    let dl = null;
+    try { dl = window.claude?.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+    if (dl) {
+      try { await dl.save({ filename, data: blob }); return true; }
+      catch (e) { flash(e?.code === 'declined' ? '내려받기를 취소했습니다' : e?.code === 'rate_limited' ? '잠시 뒤 다시 누르십시오' : '이 화면에서는 파일을 내려받을 수 없습니다'); return false; }
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    return true;
+  }
+  async function downloadTeams(teams, btn) {
+    if (!teams.length) { flash('내려받을 조가 없습니다'); return; }
+    const label = btn?.textContent;
+    if (btn) { btn.disabled = true; btn.textContent = 'PPT 만드는 중…'; }
+    try {
+      if (teams.length === 1) { const blob = await buildPptx(teams[0]); if (await saveFile(pptName(teams[0]), blob)) flash('원본 시트 모양의 PPT를 만들었습니다'); }
+      else {
+        const out = new JSZip();
+        for (const t of teams) out.file(pptName(t), await buildPptx(t));
+        const blob = await out.generateAsync({ type: 'blob' });
+        if (await saveFile(`3-2 캠페인 기획 실습_전체 ${teams.length}개 조.zip`, blob)) flash(`${teams.length}개 조의 PPT를 zip으로 묶었습니다`);
+      }
+    } catch (e) {
+      flash(e?.message === 'nozip' ? 'PPT 도구를 불러오지 못했습니다 · 인터넷 연결을 확인하십시오' : 'PPT를 만들지 못했습니다');
+    } finally { if (btn && btn.isConnected) { btn.disabled = false; btn.textContent = label; } }
+  }
+  const ownTeam = () => ({ id: state.teamId || 'me', name: state.team || '', author: state.author, mission: state.mission, data: { ...D() } });
 
   /* ---------- 이벤트 ---------- */
   let navT;
@@ -1039,6 +1247,11 @@
         } catch (err) { flash('제출 코드를 읽지 못했습니다 · 조가 복사한 코드 전체를 붙여 넣으십시오'); }
         break;
       }
+      case 'pptOwn':
+        if (!state.mission) { flash('먼저 미션을 고르십시오'); break; }
+        downloadTeams([ownTeam()], t); break;
+      case 'pptTeam': { const tm = roomTeams().find((x) => x.id === t.dataset.id); if (tm) downloadTeams([tm], t); break; }
+      case 'pptAll': downloadTeams(roomTeams(), t); break;
       case 'importDel': delete state.imports[t.dataset.id]; save(); renderRoomBody(); break;
       case 'instrOff': state.instructor = false; state.course = 'campaign'; if (!state.mission) state.view = 'home'; save(); render(); flash('강사 모드를 껐습니다'); break;
     }
