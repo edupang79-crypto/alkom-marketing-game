@@ -362,6 +362,11 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
 .rbody .row-sites,.rbody .row-sub,.rbody .hint{display:none}
 .ro{font-size:13.5px;line-height:1.55;padding:2px 4px;white-space:normal}
 .ro-empty{color:var(--line)}
+.reset-box{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-top:6px;padding:12px 14px;border:1.5px solid var(--bad);border-radius:10px;background:var(--bad-bg)}
+.reset-box>div{flex:1 1 320px}
+.reset-box p{margin:2px 0 0}
+.btn.danger-solid{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.danger-solid.armed{background:#7f1d1a;border-color:#7f1d1a}
 .matrix-tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:10px}
 .import{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:28px}
 .import summary{cursor:pointer;font-weight:800}
@@ -406,6 +411,7 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
       <button type="button" class="btn btn-pen" data-act="answers" aria-pressed="true"><span>예시 답안 숨기기</span></button>
     </div>
     <span id="syncState" class="sync" role="status" hidden></span>
+    <button type="button" id="instrLogin" class="btn ghost" data-act="instrLogin">강사</button>
     <button type="button" class="btn ghost" data-act="export" aria-expanded="false" aria-controls="exportPanel">내보내기 · 백업</button>
   </div>
   <div id="exportPanel" class="export" hidden>
@@ -425,7 +431,7 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
     <div class="box">
       <h3>강사 모드</h3>
       <p id="instrState"></p>
-      <div class="row"><input id="instrCode" type="password" placeholder="강사 코드" aria-label="강사 코드" autocomplete="off"><button type="button" id="instrOn" class="btn ghost" data-act="instrOn">켜기</button><button type="button" id="instrOff" class="btn ghost" data-act="instrOff" hidden>강사 모드 끄기</button></div>
+      <div class="row"><input id="instrCode" type="password" placeholder="강사 비밀번호" aria-label="강사 비밀번호" inputmode="numeric" autocomplete="off"><button type="button" id="instrOn" class="btn ghost" data-act="instrOn">강사 모드 켜기</button><button type="button" id="instrOff" class="btn ghost" data-act="instrOff" hidden>강사 모드 끄기</button></div>
     </div>
   </div>
 </header>

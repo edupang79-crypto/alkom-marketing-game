@@ -370,6 +370,11 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
 .rbody .row-sites,.rbody .row-sub,.rbody .hint{display:none}
 .ro{font-size:13.5px;line-height:1.55;padding:2px 4px;white-space:normal}
 .ro-empty{color:var(--line)}
+.reset-box{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-top:6px;padding:12px 14px;border:1.5px solid var(--bad);border-radius:10px;background:var(--bad-bg)}
+.reset-box>div{flex:1 1 320px}
+.reset-box p{margin:2px 0 0}
+.btn.danger-solid{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.danger-solid.armed{background:#7f1d1a;border-color:#7f1d1a}
 .matrix-tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:10px}
 .import{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:28px}
 .import summary{cursor:pointer;font-weight:800}
@@ -414,6 +419,7 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
       <button type="button" class="btn btn-pen" data-act="answers" aria-pressed="true"><span>예시 답안 숨기기</span></button>
     </div>
     <span id="syncState" class="sync" role="status" hidden></span>
+    <button type="button" id="instrLogin" class="btn ghost" data-act="instrLogin">강사</button>
     <button type="button" class="btn ghost" data-act="export" aria-expanded="false" aria-controls="exportPanel">내보내기 · 백업</button>
   </div>
   <div id="exportPanel" class="export" hidden>
@@ -433,7 +439,7 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
     <div class="box">
       <h3>강사 모드</h3>
       <p id="instrState"></p>
-      <div class="row"><input id="instrCode" type="password" placeholder="강사 코드" aria-label="강사 코드" autocomplete="off"><button type="button" id="instrOn" class="btn ghost" data-act="instrOn">켜기</button><button type="button" id="instrOff" class="btn ghost" data-act="instrOff" hidden>강사 모드 끄기</button></div>
+      <div class="row"><input id="instrCode" type="password" placeholder="강사 비밀번호" aria-label="강사 비밀번호" inputmode="numeric" autocomplete="off"><button type="button" id="instrOn" class="btn ghost" data-act="instrOn">강사 모드 켜기</button><button type="button" id="instrOff" class="btn ghost" data-act="instrOff" hidden>강사 모드 끄기</button></div>
     </div>
   </div>
 </header>
@@ -1394,7 +1400,7 @@ attachHelp(NUDGES, 'nudge');
   'use strict';
 
   const STORE_KEY = 'campaign-lab-v2';
-  const INSTRUCTOR_CODE = 'lift'; // 강사 모드 코드 — 바꾸려면 이 값을 고친 뒤 ./build.sh
+  const INSTRUCTOR_CODE = '0000'; // 강사 비밀번호 — 바꾸려면 이 값을 고친 뒤 ./build.sh
   const $ = (s, el = document) => el.querySelector(s);
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const num = (v) => {
@@ -1851,7 +1857,8 @@ attachHelp(NUDGES, 'nudge');
     $('#instructorBar').hidden = !state.instructor;
     document.querySelectorAll('[data-course]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.course === state.course));
     const ab = $('[data-act="answers"]'); ab.setAttribute('aria-pressed', state.answers); ab.querySelector('span').textContent = state.answers ? '예시 답안 숨기기' : '예시 답안 보기';
-    $('#instrState').textContent = state.instructor ? '강사 모드가 켜져 있습니다.' : '강사 코드를 넣으면 예시 답안과 3-1 케이스 C 참고 답안이 열립니다.';
+    $('#instrState').textContent = state.instructor ? '강사 모드가 켜져 있습니다. 강사방 · 예시 답안 · 다시 시작을 쓸 수 있습니다.' : '강사 비밀번호를 넣으면 강사방 · 예시 답안 · 3-1 케이스 C 참고 답안이 열립니다.';
+    $('#instrLogin').hidden = state.instructor;
     $('#instrOn').hidden = state.instructor; $('#instrCode').hidden = state.instructor; $('#instrOff').hidden = !state.instructor;
   }
 
@@ -1991,7 +1998,7 @@ attachHelp(NUDGES, 'nudge');
         ${siteIds ? `<div class="sheet-sites"><span>이 시트에 쓸 자료</span>${siteChips(siteIds)}<button type="button" class="linkish" data-view="sites">사이트 전체와 검색 방법</button></div>` : ''}
         <div class="sheet-tools">
           ${state.instructor && !sheet.dynamic ? '<button type="button" class="btn ghost" data-act="fill">이 시트에 예시 답안 채우기</button>' : ''}
-          <button type="button" class="btn ghost danger" data-act="clear">이 시트 비우기</button>
+          ${state.instructor ? '<button type="button" class="btn ghost danger" data-act="clear">이 시트 비우기</button>' : ''}
         </div>
         ${ansNote}
         ${isCampaign() ? roundBarHTML(sheet.id) : ''}
@@ -2070,7 +2077,7 @@ attachHelp(NUDGES, 'nudge');
   const ROUNDS = ['s0', 's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11'];
   const ROUND_MIN = { s0: 30, s1: 35, s2: 35, s3: 40, s4: 30, s5: 40, s6: 35, s7: 40, s8: 30, s9: 35, s10: 45, s11: 60 };
   let DB = null, canAdmin = false, control = null, teamsLive = {}, teamUnsub = null, teamsUnsub = null, teamExists = false, syncState = 'off';
-  let writing = Promise.resolve(), flushT = null;
+  let writing = Promise.resolve(), flushT = null, controlReady = false;
   const pending = {};
   const enc = (k) => k.replace(/\./g, '|');
   const dec = (k) => k.replace(/\|/g, '.');
@@ -2083,7 +2090,7 @@ attachHelp(NUDGES, 'nudge');
 
   /* 강사가 라운드를 열기 전 시트는 잠긴다. 강사방이 한 번도 라운드를 열지 않았으면(control 없음) 모두 열림 */
   function unlocked(sid) {
-    if (!control || control.all) return true;
+    if (!control || control.all || !(control.round >= 0)) return true;
     return ROUNDS.indexOf(sid) <= control.round;
   }
   function remaining() {
@@ -2166,7 +2173,7 @@ attachHelp(NUDGES, 'nudge');
     if (!DB || !state.teamId) return;
     teamUnsub = DB.doc(`teams/${state.teamId}`).onSnapshot((snap) => {
       teamExists = snap.exists;
-      if (!snap.exists) { if (state.mission && Object.keys(D()).length) writing = writing.then(() => writeTeam({})).catch(() => {}); return; }
+      if (!snap.exists) { if (controlReady && state.mission && Object.keys(D()).length) writing = writing.then(() => writeTeam({})).catch(() => {}); return; }
       const d = snap.data();
       if (!state.mission && d.mission) { state.mission = d.mission; save(); render(); flash(`${state.team}은 케이스 ${d.mission} 미션을 하고 있습니다`); }
       const remote = decAll(d.missions?.[state.mission]?.data);
@@ -2193,7 +2200,39 @@ attachHelp(NUDGES, 'nudge');
     }
     renderNavLite();
   }
+  /* 강사가 다시 시작하면 control.resetAt이 바뀐다. 처음 보는 기록이면 이 브라우저의 조 작성 내용을 지운다 */
+  function applyReset() {
+    const at = control?.resetAt;
+    if (!at || at === state.resetSeen) return false;
+    const first = !state.resetSeen && !Object.keys(state.data).some((k) => k !== 'promo');
+    state.resetSeen = at;
+    if (first) { save(); return false; }
+    Object.keys(state.data).forEach((k) => { if (k !== 'promo') delete state.data[k]; });
+    Object.keys(pending).forEach((k) => delete pending[k]); clearTimeout(flushT);
+    if (!state.instructor) { state.teamId = ''; state.team = ''; state.author = ''; $('#team').value = ''; $('#author').value = ''; }
+    state.mission = null; state.sheet.campaign = 's0'; state.imports = {};
+    if (state.view !== 'room') state.view = 'home';
+    save(); subscribeTeam();
+    if (!state.instructor) flash('강사가 실습을 다시 시작했습니다 · 우리 조부터 다시 고르십시오');
+    return true;
+  }
+  async function resetAll() {
+    if (!DB) {
+      state.imports = {}; Object.keys(state.data).forEach((k) => { if (k !== 'promo') delete state.data[k]; });
+      state.mission = null; save(); render(); flash('이 브라우저의 조 기록을 지웠습니다'); return;
+    }
+    const at = new Date().toISOString();
+    try { await DB.doc('control/room').set({ round: -1, all: false, endsAt: null, resetAt: at }); applyReset(); }
+    catch (e) { flash('다시 시작은 이 앱의 소유자 · 편집자만 할 수 있습니다'); return; }
+    const ids = new Set([...Object.keys(teamsLive), ...Array.from({ length: TEAM_COUNT }, (_, i) => `t${i + 1}`)]);
+    let failed = 0;
+    for (const id of ids) { try { await DB.doc(`teams/${id}`).delete(); } catch (e) { failed++; } }
+    state.imports = {}; teamsLive = {}; save();
+    if (state.view === 'room') renderRoom();
+    flash(failed ? `다시 시작했지만 ${failed}개 조 기록을 지우지 못했습니다 · 한 번 더 눌러 주십시오` : '모든 조의 내용을 지우고 다시 시작했습니다');
+  }
   async function setControl(next) {
+    if (control?.resetAt && !next.resetAt) next = { ...next, resetAt: control.resetAt };
     if (!DB) { flash('실시간 공유가 꺼져 있어 라운드를 열 수 없습니다'); return; }
     try { await DB.doc('control/room').set(next); flash(next.all ? '모든 라운드를 열었습니다' : next.round < 0 ? '라운드를 처음으로 되돌렸습니다' : `라운드 ${sheetNo(ROUNDS[next.round])}을 시작했습니다`); }
     catch (e) { flash('라운드를 바꿀 권한이 없습니다 · 이 앱의 소유자 · 편집자만 바꿀 수 있습니다'); }
@@ -2219,13 +2258,14 @@ attachHelp(NUDGES, 'nudge');
     DB.doc('control/room').onSnapshot((snap) => {
       const before = control ? JSON.stringify(control) : '';
       control = snap.exists ? snap.data() : null;
-      if (before === (control ? JSON.stringify(control) : '')) return;
+      const wiped = applyReset();
+      if (!controlReady) { controlReady = true; subscribeTeam(); }
+      if (!wiped && before === (control ? JSON.stringify(control) : '')) return;
       const typing = document.activeElement?.dataset?.k;
       if (state.view === 'room') { renderRoomControls(); renderRoomBody(); }
-      else if (!typing) render();
+      else if (wiped || !typing) render();
       else renderNav();
-    }, () => {});
-    subscribeTeam();
+    }, () => { controlReady = true; subscribeTeam(); });
     if (state.view === 'room') subscribeRoom();
     render();
   }
@@ -2280,9 +2320,11 @@ attachHelp(NUDGES, 'nudge');
         <button type="button" class="btn ghost" data-act="roundPlus" ${control?.endsAt ? '' : 'disabled'}>+5분</button>
         <button type="button" class="btn ghost" data-act="roundStop" ${control?.endsAt ? '' : 'disabled'}>타이머 끄기</button>
         <button type="button" class="btn ghost" data-act="roundAll">모든 라운드 열기</button>
-        <button type="button" class="btn ghost danger" data-act="roundReset">처음으로</button>
+        <button type="button" class="btn ghost" data-act="roundReset">라운드 처음으로</button>
       </div><p class="muted">라운드를 시작하면 그 라운드까지만 조 화면에서 열리고, 다음 시트는 잠깁니다.</p>`
-      : `<p class="muted">${DB ? '라운드 시작 · 타이머는 이 앱의 소유자와 편집자만 조작할 수 있습니다.' : '라운드 진행은 실시간 공유가 켜진 화면에서만 됩니다.'}</p>`}`;
+      : `<p class="muted">${DB ? '라운드 시작 · 타이머는 이 앱의 소유자와 편집자만 조작할 수 있습니다.' : '라운드 진행은 실시간 공유가 켜진 화면에서만 됩니다.'}</p>`}
+      <div class="reset-box"><div><b>다시 시작</b><p class="muted">모든 조의 작성 내용과 라운드를 지우고 처음부터 시작합니다. 조원 화면도 조 선택부터 다시 시작합니다. 되돌릴 수 없으니, 필요하면 먼저 "모든 조 PPT 내려받기"로 보관하십시오.</p></div>
+        <button type="button" class="btn danger-solid" data-act="resetAll">다시 시작 · 모든 조 내용 지우기</button></div>`;
   }
   const sid0 = (sid) => sid === 's0' ? '케이스 시트' : `라운드 ${sheetNo(sid)}`;
   const sidFull = (sid) => sid === 's0' ? '케이스 시트' : `라운드 ${sheetNo(sid)} · ${sheetTitle(sid)}`;
@@ -2613,7 +2655,7 @@ attachHelp(NUDGES, 'nudge');
         break;
       case 'instrOn':
         if ($('#instrCode').value.trim().toLowerCase() === INSTRUCTOR_CODE) { state.instructor = true; state.answers = true; $('#instrCode').value = ''; save(); render(); flash('강사 모드를 켰습니다'); }
-        else flash('강사 코드가 맞지 않습니다');
+        else flash('강사 비밀번호가 맞지 않습니다');
         break;
       case 'submit': {
         const sid = t.dataset.sid;
@@ -2626,6 +2668,11 @@ attachHelp(NUDGES, 'nudge');
       case 'roundPlus': if (control?.endsAt) setControl({ ...control, endsAt: new Date(Math.max(Date.now(), Date.parse(control.endsAt)) + 5 * 60000).toISOString() }); break;
       case 'roundStop': if (control) setControl({ ...control, endsAt: null }); break;
       case 'roundAll': setControl({ round: ROUNDS.length - 1, all: true, endsAt: null }); break;
+      case 'resetAll':
+        if (!roomAllowed()) break;
+        if (clearArmed !== 'ALL') { clearArmed = 'ALL'; t.textContent = '정말 지웁니다 · 한 번 더 누르십시오'; t.classList.add('armed'); setTimeout(() => { if (t.isConnected) { t.textContent = '다시 시작 · 모든 조 내용 지우기'; t.classList.remove('armed'); } if (clearArmed === 'ALL') clearArmed = null; }, 4000); break; }
+        clearArmed = null; t.disabled = true; t.textContent = '지우는 중…'; resetAll(); break;
+      case 'instrLogin': { const pnl = $('#exportPanel'); pnl.hidden = false; $('[data-act="export"]').setAttribute('aria-expanded', 'true'); $('#instrCode').focus(); break; }
       case 'roundReset': setControl({ round: -1, all: false, endsAt: null }); break;
       case 'roomMode': state.roomSel = { ...state.roomSel, mode: t.dataset.mode }; save(); renderRoomView(); break;
       case 'importAdd': {
