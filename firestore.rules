@@ -1,0 +1,17 @@
+rules_version = '2';
+// 실습 앱이 쓰는 세 컬렉션만 열어 둔다. 로그인 없이 쓰는 수업용이므로, 수업이 끝나면 강사방 "다시 시작"으로 비운다.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /teams/{id} {
+      allow read: if true;
+      allow write: if id.matches('t[1-4]') && request.resource.size() < 500000;
+      allow delete: if true;
+    }
+    match /control/{id} {
+      allow read, write: if id == 'room';
+    }
+    match /presence/{id} {
+      allow read, write: if id.size() < 40;
+    }
+  }
+}

@@ -14,6 +14,7 @@ body() {
 body inline > dist/artifact.html
 {
   printf '<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>\n</head>\n<body>\n' "$FONT"
+  printf '<script src="firebase-config.js"></script>\n<script>\n'; cat src/sync-firebase.js; printf '\n</script>\n'
   body file
   printf '</body>\n</html>\n'
 } > index.html

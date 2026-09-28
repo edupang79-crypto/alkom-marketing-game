@@ -706,7 +706,7 @@
   const showingExample = (sid) => !isCampaign() || control?.example === sid || state.localExample === sid;
   function toggleExample(sid) {
     const on = !(control?.example === sid || state.localExample === sid);
-    if (DB && canAdmin) { setControl({ example: on ? sid : null }); state.localExample = null; }
+    if (DB && isAdmin()) { setControl({ example: on ? sid : null }); state.localExample = null; }
     else { state.localExample = on ? sid : null; flash(on ? '이 화면에서 예시를 보여 줍니다 · 조 화면까지 보내려면 앱 소유자 계정으로 누르십시오' : '예시를 닫았습니다'); }
     save(); render();
   }
@@ -828,6 +828,8 @@
   const encAll = (d) => Object.fromEntries(Object.entries(d).map(([k, v]) => [enc(k), v]));
   const decAll = (d) => Object.fromEntries(Object.entries(d || {}).map(([k, v]) => [dec(k), v]));
   const roomAllowed = () => state.instructor || canAdmin;
+  /* 로그인 없는 공개 저장소(Firebase)에서는 누구나 쓸 수 있으므로, 강사 비밀번호를 넣은 화면만 강사 권한을 쓴다 */
+  const isAdmin = () => canAdmin && (!window.OPEN_SYNC || state.instructor);
   const sheetNo = (sid) => COURSES.campaign.sheets.find((s) => s.id === sid)?.no ?? '';
   const sheetTitle = (sid) => COURSES.campaign.sheets.find((s) => s.id === sid)?.title ?? '';
   const sidFull = (sid) => `실습 ${sheetNo(sid)} · ${sheetTitle(sid)}`;
@@ -1049,7 +1051,7 @@
     const where = state.view === 'sheet' && isCampaign() ? state.sheet.campaign : state.view;
     ROOM.presence({ role: state.instructor ? 'instructor' : 'team', team: state.teamId || null, author: (state.author || '').slice(0, 20), where, at: state.joinedAt || null }).catch(() => {});
   }
-  const APP_URL = 'https://claude.ai/artifact/LqX7f24Fz6odBzYPaSJrax';
+  const APP_URL = window.APP_URL || 'https://claude.ai/artifact/LqX7f24Fz6odBzYPaSJrax';
   function qrSVG(size) {
     try { const q = qrcode(0, 'M'); q.addData(APP_URL); q.make(); return q.createSvgTag({ cellSize: size, margin: 2, scalable: true, alt: '실습 앱 입장 QR 코드' }); }
     catch (e) { return ''; }
@@ -1068,14 +1070,14 @@
       return `<article class="pslot ${st}"><h4>${tid.slice(1)}조 <span class="pdot"></span><small>${here.length ? `접속 ${here.length}대` : doc ? '지금 접속 없음 · 기록 있음' : '아직 안 들어옴'}</small></h4>
         <p>${names.length ? esc(names.join(' · ')) : here.length ? '작성자 이름 미입력' : '&nbsp;'}</p>
         <p class="muted">${wh.length ? '보는 화면 · ' + esc(wh.join(', ')) : doc?.updatedAt ? '최근 입력 ' + hhmm(doc.updatedAt) : '&nbsp;'}</p>
-        ${canAdmin && DB && (here.length || doc) ? `<div class="pslot-btns"><button type="button" class="linkish" data-act="kickTeam" data-id="${tid}">조 선택으로 돌려보내기</button><button type="button" class="linkish danger" data-act="clearTeam" data-id="${tid}">이 조 기록 지우기</button></div>` : ''}</article>`;
+        ${isAdmin() && DB && (here.length || doc) ? `<div class="pslot-btns"><button type="button" class="linkish" data-act="kickTeam" data-id="${tid}">조 선택으로 돌려보내기</button><button type="button" class="linkish danger" data-act="clearTeam" data-id="${tid}">이 조 기록 지우기</button></div>` : ''}</article>`;
     };
     const lobby = devs.filter((p) => !p.presence?.team).length;
     el.innerHTML = `<div class="presence-head"><h3>입장 현황 <small>${ROOM ? `지금 접속 ${devs.length}대${lobby ? ` · 조 고르는 중 ${lobby}대` : ''}` : '실시간 접속 표시는 공유받아 로그인한 사람에게만 보입니다'}</small></h3></div>
       <div class="pslots">${teamIds.map(slot).join('')}</div>`;
   }
   async function kickTeam(tid, clear) {
-    if (!DB || !canAdmin) { flash('이 앱의 소유자 · 편집자만 할 수 있습니다'); return; }
+    if (!DB || !isAdmin()) { flash('이 앱의 소유자 · 편집자만 할 수 있습니다'); return; }
     const at = new Date().toISOString();
     const patch = clear ? { cleared: { ...(control?.cleared || {}), [tid]: at }, kick: { ...(control?.kick || {}), [tid]: at } } : { kick: { ...(control?.kick || {}), [tid]: at } };
     const next = { round: -1, all: false, endsAt: null, example: null, ...(control || {}), ...patch };
@@ -1122,10 +1124,13 @@
         <div><h3>교육생 입장 QR</h3><p>휴대폰 카메라로 찍으면 이 앱이 열립니다. 조를 고르는 순간 아래 입장 현황과 표에 그 조가 나타나고, 앱을 닫으면 "접속 중" 표시가 사라집니다.</p>
           <p class="join-url">${APP_URL}</p>
           <div class="row"><button type="button" class="btn" data-act="qrBig">QR 크게 띄우기</button><button type="button" class="btn ghost" data-act="copyUrl">주소 복사</button></div>
-          <details class="join-help"><summary>교육생 화면에 내용이 안 모일 때 확인할 것</summary>
+          ${window.OPEN_SYNC ? `<details class="join-help"><summary>교육생 화면에 내용이 안 모일 때 확인할 것</summary>
+            <ol><li>로그인이나 가입은 필요 없습니다. QR로 열고 우리 조만 고르면 됩니다.</li>
+            <li>조 화면 위에 "강사방과 연결됨"이 보이면 정상입니다. "저장 안 됨"이 뜨면 와이파이 · 데이터 연결을 확인하십시오.</li>
+            <li>회사 보안망에서 막히면 휴대폰 데이터로 접속하거나, 아래 "제출 코드로 모으기"를 쓰십시오.</li></ol></details>` : `<details class="join-help"><summary>교육생 화면에 내용이 안 모일 때 확인할 것</summary>
             <ol><li>교육생은 claude.ai에 <b>로그인</b>한 상태여야 합니다.</li>
             <li>이 앱 오른쪽 위 <b>공유</b> 메뉴에서 교육생을 초대하고, 권한을 <b>보기(Viewer)보다 높은 참여 · 편집 권한</b>으로 주어야 조가 쓴 칸이 강사방에 저장됩니다. 보기 권한이면 조 화면 위에 "보기 전용"이 뜨고, 쓴 내용은 그 휴대폰에만 남습니다.</li>
-            <li>로그인 없이 공개 링크로만 연 사람은 입장 현황에 보이지 않고 강사방에도 저장되지 않습니다. 그때는 아래 "제출 코드로 모으기"를 쓰십시오.</li></ol></details></div>
+            <li>로그인 없이 공개 링크로만 연 사람은 입장 현황에 보이지 않고 강사방에도 저장되지 않습니다. 그때는 아래 "제출 코드로 모으기"를 쓰십시오.</li></ol></details>`}</div>
       </section>
       <section id="roomPresence" class="room-presence"></section>
       <section id="roomControls" class="room-controls"></section>
@@ -1149,14 +1154,14 @@
       <div class="rc-status"><b>${esc(status)}</b>${control?.endsAt && !control.all ? `<span>남은 시간 <b class="js-timer">${mmss(remaining())}</b></span>` : ''}${control?.example ? `<span class="ex-tag">예시 공개 중 · 실습 ${sheetNo(control.example)}</span>` : ''}</div>
       <div class="round-chips">${ROUNDS.map((sid) => `<button type="button" class="rchip ${sid === sel ? 'sel' : ''} ${sid === cur ? 'live' : ''} ${control && !control.all && control.round >= 0 && ROUNDS.indexOf(sid) > control.round ? 'future' : ''}" data-roundpick="${sid}"><span>${sheetNo(sid)}</span>${esc(sheetTitle(sid))}<small>${roundMin(sid)}분${control?.example === sid ? ' · 예시' : ''}</small></button>`).join('')}</div>
       <div class="rc-actions">
-        ${canAdmin && DB ? `<button type="button" class="btn" data-act="roundStart" data-sid="${sel}">실습 ${sheetNo(sel)} 시작 · ${roundMin(sel)}분 타이머</button>
+        ${isAdmin() && DB ? `<button type="button" class="btn" data-act="roundStart" data-sid="${sel}">실습 ${sheetNo(sel)} 시작 · ${roundMin(sel)}분 타이머</button>
         <button type="button" class="btn ghost" data-act="roundPlus" ${control?.endsAt ? '' : 'disabled'}>+5분</button>
         <button type="button" class="btn ghost" data-act="roundStop" ${control?.endsAt ? '' : 'disabled'}>타이머 끄기</button>` : ''}
         <button type="button" class="btn ${exampleOn(sel) ? 'ex-on' : 'btn-ex'}" data-act="roomExample" data-sid="${sel}">${exampleOn(sel) ? `실습 ${sheetNo(sel)} 예시 닫기 · 다시 쓰기` : `실습 ${sheetNo(sel)} 예시 답안 보여 주기`}</button>
-        ${canAdmin && DB ? `<button type="button" class="btn ghost" data-act="roundAll">모든 라운드 열기</button>
+        ${isAdmin() && DB ? `<button type="button" class="btn ghost" data-act="roundAll">모든 라운드 열기</button>
         <button type="button" class="btn ghost" data-act="roundReset">라운드 처음으로</button>` : ''}
       </div>
-      <p class="muted">${canAdmin && DB ? '라운드를 시작하면 그 라운드까지만 조 화면에서 열립니다. "예시 답안 보여 주기"를 누르면 모든 조 화면에 예시 팀 답안이 같은 시트 모양으로 뜨고, 다시 누르면 조가 쓰던 칸으로 돌아갑니다.' : DB ? '라운드 · 타이머 · 조 화면 예시 공개는 이 앱의 소유자와 편집자만 할 수 있습니다. 이 화면에서는 예시를 강사 화면에만 띄웁니다.' : '실시간 공유가 꺼져 있어 예시는 이 화면(프로젝터)에만 뜹니다.'}</p>
+      <p class="muted">${isAdmin() && DB ? '라운드를 시작하면 그 라운드까지만 조 화면에서 열립니다. "예시 답안 보여 주기"를 누르면 모든 조 화면에 예시 팀 답안이 같은 시트 모양으로 뜨고, 다시 누르면 조가 쓰던 칸으로 돌아갑니다.' : DB ? '라운드 · 타이머 · 조 화면 예시 공개는 이 앱의 소유자와 편집자만 할 수 있습니다. 이 화면에서는 예시를 강사 화면에만 띄웁니다.' : '실시간 공유가 꺼져 있어 예시는 이 화면(프로젝터)에만 뜹니다.'}</p>
       <div class="reset-box"><div><b>다시 시작</b><p class="muted">모든 조의 작성 내용과 라운드를 지우고 처음부터 시작합니다. 조원 화면도 조 선택부터 다시 시작합니다. 되돌릴 수 없으니, 필요하면 먼저 "모든 조 PPT 내려받기"로 보관하십시오.</p></div>
         <button type="button" class="btn danger-solid" data-act="resetAll">다시 시작 · 모든 조 내용 지우기</button></div>`;
     tickTimers();
