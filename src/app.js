@@ -454,7 +454,7 @@
     if (b.type === 'table') {
       const o = off(b);
       const head = `<tr>${b.cols.map((c, ci) => `<th scope="col" class="col-${c.t || 'label'}" id="h-${sid}-${b.id}-${ci}">${esc(c.h)}</th>`).join('')}</tr>`;
-      const body = b.rows.map((row, r) => `<tr>${o ? `<th scope="row">${esc(row.l)}${row.sub ? `<span class="row-sub">${esc(row.sub)}</span>` : ''}</th>` : ''}${b.cols.slice(o).map((col, k) => {
+      const body = b.rows.map((row, r) => (row.hideInForm && !RO) ? '' : `<tr>${o ? `<th scope="row">${esc(row.l)}${row.sub ? `<span class="row-sub">${esc(row.sub)}</span>` : ''}</th>` : ''}${b.cols.slice(o).map((col, k) => {
         const c = k + o;
         if (col.t === 'fixed') return `<td class="col-fixed">${esc(row.fx?.[c - o] || '')}</td>`;
         const { t, opts } = cellType(row, col);
@@ -467,8 +467,60 @@
       if (RO) { let h = ''; try { h = CALC[b.id](sid, b); } catch (e) { h = '<p class="muted">값이 비어 있습니다.</p>'; } return `<section class="calc"><h4>자동 점검</h4><div class="calc-body">${h}</div></section>`; }
       return `<section class="calc" data-calc="${b.id}" data-i="${i}" aria-live="polite"><h4>자동 점검</h4><div class="calc-body"></div></section>`;
     }
+    if (b.type === 'typePicker') return typePickerHTML(sid);
     if (b.type === 'draft') return RO ? '' : `<div class="draft"><p>앞 워크시트에 적은 내용으로 아래 표의 <b>빈 칸</b>을 채웁니다. 채운 뒤 문장을 다듬으십시오.</p><button type="button" class="btn" data-act="draft">초안 불러오기</button></div>`;
     return '';
+  }
+
+  /* 실습 ① 캠페인 유형 선택 — 인사이트 확인 → 유형 카드 5개(하나만) → 사례 줄과 우리 캠페인 줄 → 참고 예시(정답 아님) */
+  const TYPE_KEY = (sid) => ckey(sid, 'dir', 1, 1);
+  const tpKey = (sid, ti, i) => `${sid}.tp.${ti}.${i}`;
+  function typePickerHTML(sid) {
+    const chosen = val(TYPE_KEY(sid));
+    const ui = state.tp || {};
+    const openK = RO ? chosen : (ui.preview || chosen);
+    const ti = TYPE_PICK.findIndex((t) => t.k === openK);
+    const ins = C('s3', 'ins', 0, 1) || (() => { const b = findBlock('s1', 'sig'); const r = b ? b.rows.findIndex((_, i) => C('s1', 'sig', i, 4) === '강') : -1; return r >= 0 ? C('s1', 'sig', r, 2) : ''; })();
+    if (RO) {
+      if (ti < 0) return '';
+      const t = TYPE_PICK[ti];
+      const ours = t.slots.map((_, i) => val(tpKey(sid, ti, i)));
+      return `<section class="tp tp-ro"><h4>캠페인 유형 · <b>${esc(t.k)}</b> <small>${esc(t.case)} · ${esc(t.formula)}</small></h4>${ours.some(Boolean) ? `<p class="tp-line">${t.slots.map((sl, i) => `<span><em>${esc(sl)}</em>${esc(ours[i] || '—')}</span>`).join('<i>→</i>')}</p>` : ''}</section>`;
+    }
+    const cards = TYPE_PICK.map((t, i) => `<article class="tp-card ${chosen === t.k ? 'sel' : ''} ${openK === t.k ? 'open' : ''}">
+        <span class="tp-no">0${i + 1}</span><h5>${esc(t.k)}</h5>
+        <p class="tp-when"><small>이럴 때 고른다</small>${esc(t.pick)}</p>
+        <div class="tp-btns">
+          <button type="button" class="btn ${chosen === t.k ? '' : 'ghost'}" data-tppick="${esc(t.k)}" aria-pressed="${chosen === t.k}">${chosen === t.k ? '✓ 고른 유형' : '이 유형 고르기'}</button>
+          <button type="button" class="linkish" data-tpview="${esc(t.k)}">참고 사례 보기</button>
+        </div></article>`).join('');
+    let panel = '';
+    if (ti >= 0) {
+      const t = TYPE_PICK[ti];
+      const applied = !!(ui.applied?.[t.k]) || t.slots.some((_, i) => val(tpKey(sid, ti, i)));
+      const showEx = !!(ui.ex?.[t.k]);
+      const head = `<tr><th scope="col"></th>${t.slots.map((sl) => `<th scope="col">${esc(sl)}</th>`).join('')}</tr>`;
+      const caseRow = `<tr class="tp-case"><th scope="row">사례에서는<small>${esc(t.case)} · 참고 사례</small></th>${t.caseRow.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`;
+      const ourRow = applied ? `<tr class="tp-our"><th scope="row">우리 캠페인<small>${esc(state.team || '우리 조')}</small></th>${t.slots.map((sl, i) => { const k = tpKey(sid, ti, i); return `<td><textarea id="f-${k}" data-k="${k}" rows="2" aria-label="우리 캠페인 · ${esc(sl)}" placeholder="${esc(sl)} 칸 — 우리 고객 이야기로">${esc(val(k))}</textarea></td>`; }).join('')}</tr>` : '';
+      const exRow = showEx ? `<tr class="tp-ex"><th scope="row">참고 예시<small>정답이 아니라 참고 예시 · ${esc(t.exLabel)}</small></th>${t.exRow.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>` : '';
+      panel = `<div class="tp-panel">
+        <div class="tp-panel-head"><div><small>${chosen === t.k ? '고른 유형' : '미리 보는 유형'}</small><b>${esc(t.k)}</b></div><div><small>대표 사례</small><b>${esc(t.case)}</b></div><div><small>빌려 올 공식</small><b class="tp-formula">${esc(t.formula)}</b></div></div>
+        ${t.note ? `<p class="tp-note">${esc(t.note)}</p>` : ''}
+        <div class="tbl-wrap"><table class="tp-table"><thead>${head}</thead><tbody>${caseRow}${ourRow}${exRow}</tbody></table></div>
+        <p class="tp-say">사례의 내용을 가져오는 게 아니라 <b>칸의 순서(공식)</b>만 가져옵니다. 칸 이름은 그대로 두고, 칸 안은 우리 고객 이야기로 채우십시오.</p>
+        <div class="tp-actions">
+          ${chosen === t.k ? '' : `<button type="button" class="btn" data-tppick="${esc(t.k)}">이 유형 고르기</button>`}
+          ${applied ? '' : `<button type="button" class="btn ${chosen === t.k ? '' : 'ghost'}" data-act="tpApply" data-type="${esc(t.k)}">우리 캠페인에 적용</button>`}
+          <button type="button" class="btn ghost" data-act="tpEx" data-type="${esc(t.k)}">${showEx ? '참고 예시 숨기기' : '참고 예시 보기'}</button>
+          ${applied && chosen === t.k ? `<button type="button" class="btn ghost" data-act="tpBench" data-type="${esc(t.k)}">"벤치마킹 사례와 가져올 요소" 칸에 넣기</button>` : ''}
+        </div></div>`;
+    }
+    return `<section class="tp">
+      <h4 class="tp-title">캠페인 유형 고르기 <small>유형 → 대표 사례 → 가져올 공식이 한 줄로 이어집니다</small></h4>
+      <p class="tp-ins"><b>우리 고객 인사이트</b>${ins ? esc(ins) : '<span class="muted">실습 ③ 인사이트(또는 위 표에서 "강"으로 고른 신호의 고객 상황)가 여기에 보입니다</span>'}</p>
+      <div class="tp-cards">${cards}</div>
+      ${panel}
+    </section>`;
   }
 
   function whyHTML(sheet) {
@@ -697,6 +749,16 @@
       </nav>`;
     app.querySelectorAll('textarea').forEach(autosize);
     if (!exMode) runCalcs();
+  }
+
+  /* 유형 선택 영역만 다시 그린다 (다른 칸의 입력 · 스크롤을 건드리지 않게) */
+  function rerenderPicker() {
+    const el = app.querySelector('.tp'); if (!el) { render(); return; }
+    const sid = state.sheet.campaign;
+    const wrap = document.createElement('div'); wrap.innerHTML = typePickerHTML(sid);
+    el.replaceWith(wrap.firstElementChild);
+    app.querySelectorAll('.tp textarea').forEach(autosize);
+    runCalcs(); renderNavLite();
   }
 
   function runCalcs() {
@@ -1298,6 +1360,11 @@
     if (t.dataset.view) { state.view = t.dataset.view; save(); render(); goTop(); return; }
     if (t.dataset.sheet) { state.view = 'sheet'; state.sheet[state.course] = t.dataset.sheet; save(); render(); goTop(); return; }
     if (t.dataset.team) { chooseTeam(t.dataset.team); return; }
+    if (t.dataset.tppick) {
+      const sid = state.sheet.campaign; setVal(TYPE_KEY(sid), t.dataset.tppick);
+      state.tp = { ...(state.tp || {}), preview: null }; save(); rerenderPicker(); return;
+    }
+    if (t.dataset.tpview) { state.tp = { ...(state.tp || {}), preview: t.dataset.tpview }; save(); rerenderPicker(); return; }
     if (t.dataset.gstage !== undefined) { state.game.stage = +t.dataset.gstage; state.game.q = -1; save(); renderGame(); return; }
     if (t.dataset.gpick !== undefined) { const g = state.game; g.picked[`${g.stage}.${g.q}`] = +t.dataset.gpick; save(); renderGame(); return; }
     if (t.dataset.cell) { const [tid, sid] = t.dataset.cell.split('|'); state.roomSel = { mode: 'team', tid, sid }; save(); renderRoomView(); $('#roomView').scrollIntoView({ block: 'start' }); return; }
@@ -1305,6 +1372,16 @@
     if (t.dataset.course) { state.course = t.dataset.course; state.view = 'sheet'; save(); render(); goTop(); return; }
     const sheet = findSheet(state.sheet[state.course]);
     switch (t.dataset.act) {
+      case 'tpApply': state.tp = { ...(state.tp || {}), applied: { ...(state.tp?.applied || {}), [t.dataset.type]: true } }; save(); rerenderPicker(); app.querySelector('.tp-our textarea')?.focus(); break;
+      case 'tpEx': state.tp = { ...(state.tp || {}), ex: { ...(state.tp?.ex || {}), [t.dataset.type]: !state.tp?.ex?.[t.dataset.type] } }; save(); rerenderPicker(); break;
+      case 'tpBench': {
+        const sid = state.sheet.campaign; const ti = TYPE_PICK.findIndex((x) => x.k === t.dataset.type); const tp = TYPE_PICK[ti];
+        const ours = tp.slots.map((sl, i) => val(tpKey(sid, ti, i)) || sl);
+        const k = ckey(sid, 'dir', 2, 1);
+        setVal(k, `${tp.case} — '${tp.slots.join(' → ')}' 순서를 가져와 우리 캠페인은 ${ours.join(' → ')}`);
+        const el = document.getElementById(`f-${k}`); if (el) { el.value = val(k); autosize(el); }
+        save(); runCalcs(); flash('벤치마킹 칸에 넣었습니다 · 문장을 다듬으십시오'); break;
+      }
       case 'gameGo': state.game.q = 0; save(); renderGame(); break;
       case 'gameNext': {
         const g = state.game, st = GAME[g.stage];

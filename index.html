@@ -475,6 +475,53 @@ table.facts td.nowrap{white-space:nowrap}
 .glossary h3{margin:0;font-size:18px;font-weight:800}
 @media (max-width:700px){.why-grid{grid-template-columns:1fr}}
 
+/* 실습 ① 캠페인 유형 선택 */
+.tp{border:1.5px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--sheet)}
+.tp-title{margin:0;font-size:17px;font-weight:800;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.tp-title small{font-size:12.5px;color:var(--muted);font-weight:600}
+.tp-ins{margin:0;padding:10px 12px;border-left:4px solid var(--info);background:var(--info-bg);border-radius:0 8px 8px 0;font-size:14.5px;display:flex;flex-direction:column;gap:2px}
+.tp-ins b{font-size:12px;color:var(--info)}
+.tp-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.tp-card{border:1.5px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--field)}
+.tp-card.open{border-color:var(--info)}
+.tp-card.sel{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--sheet)}
+.tp-no{font-size:12px;font-weight:800;color:var(--pen)}
+.tp-card h5{margin:0;font-size:16px;font-weight:800}
+.tp-when{margin:0;font-size:13px;line-height:1.45;flex:1;display:flex;flex-direction:column;gap:2px}
+.tp-when small{font-size:11.5px;color:var(--muted);font-weight:700}
+.tp-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tp-btns .btn{width:100%;justify-content:center;padding:6px 8px;font-size:13px}
+.tp-btns .linkish{font-size:12.5px}
+.tp-panel{border-top:2px solid var(--ink);padding-top:12px;display:flex;flex-direction:column;gap:10px}
+.tp-panel-head{display:flex;flex-wrap:wrap;gap:8px 28px}
+.tp-panel-head div{display:flex;flex-direction:column}
+.tp-panel-head small{font-size:11.5px;color:var(--muted);font-weight:700}
+.tp-panel-head b{font-size:16px}
+.tp-formula{color:var(--pen)}
+.tp-note{margin:0;font-size:12.5px;color:var(--muted)}
+table.tp-table{border-collapse:collapse;width:100%;min-width:560px;table-layout:fixed}
+table.tp-table th,table.tp-table td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;text-align:left;font-size:14px}
+table.tp-table thead th{background:var(--ink);color:var(--sheet);font-size:13.5px}
+table.tp-table thead th:first-child{background:transparent;border-color:transparent;width:150px}
+table.tp-table tbody th{width:150px;background:var(--field);font-size:13.5px;font-weight:800;display:table-cell}
+table.tp-table tbody th small{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px}
+table.tp-table tr.tp-case td{color:var(--muted)}
+table.tp-table tr.tp-our td{padding:4px;background:var(--sheet)}
+table.tp-table tr.tp-our textarea{border-color:transparent;background:transparent;padding:4px 6px}
+table.tp-table tr.tp-our textarea:focus{border-color:var(--focus);background:var(--sheet)}
+table.tp-table tr.tp-our th{border-left:4px solid var(--ok)}
+table.tp-table tr.tp-ex td,table.tp-table tr.tp-ex th{background:var(--hl);color:var(--hl-ink)}
+table.tp-table tr.tp-ex th small{color:var(--hl-ink)}
+.tp-say{margin:0;font-size:13.5px;padding:8px 12px;border-radius:8px;background:var(--field)}
+.tp-actions{display:flex;flex-wrap:wrap;gap:8px}
+.tp-ro h4{margin:0;font-size:15px}
+.tp-ro h4 small{color:var(--muted);font-weight:600}
+.tp-line{margin:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13.5px}
+.tp-line span{display:inline-flex;flex-direction:column;border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+.tp-line em{font-style:normal;font-size:11px;color:var(--muted);font-weight:700}
+.tp-line i{font-style:normal;color:var(--muted)}
+@media (max-width:1100px){.tp-cards{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}}
+
 @media (max-width:900px){
   .top{position:static}
   .wrap{grid-template-columns:minmax(0,1fr);gap:14px;padding-block:12px 48px}
@@ -675,6 +722,17 @@ const TYPES = [
 ];
 const TYPE_NAMES = TYPES.map((t) => t.k);
 
+/* 실습 ① 캠페인 유형 선택 카드 — 유형을 고르면 대표 사례가 열리고, 사례에서 "공식(칸 순서)"만 빌려 와 칸 안을 우리 고객 이야기로 채운다.
+   slots: 빌려 올 공식의 칸 이름 / caseRow: 사례에서는 각 칸에 무엇을 넣었나 / exRow: 참고 예시(정답 아님)
+   출처: 참고 예시 중 뷰티 · 반려동물은 사례 PPT 12~13쪽, 경험형 2030은 3-2 원본 예시 답안. 브랜딩형 · 연합형 예시는 새로 만든 참고용. */
+const TYPE_PICK = [
+  { k: '고객 참여형', pick: '체험을 늘리고 싶을 때', case: '롯데 RE:EARTH', formula: '참여 → 리워드 → 상품', slots: ['참여', '리워드', '상품'], caseRow: ['플로깅 · #리얼스챌린지', '업사이클링 굿즈 교환', '매장 방문 · 상품 구매'], exLabel: '뷰티', exRow: ['공병 가져오기 챌린지', '뷰티 포인트', '친환경 뷰티 팝업에서 신상품 구매'] },
+  { k: '리워드형', pick: '회원이 다시 와야 할 때', case: '현대 Green Friends', formula: '행동 → 포인트 → 재방문', slots: ['행동', '포인트', '재방문'], caseRow: ['종이 영수증 안 받기 · 텀블러', 'H.Point', '녹색 매장 쇼핑 혜택'], exLabel: '반려동물', exRow: ['안 쓰는 펫 용품 기부', '펫 브랜드 포인트', '주말 펫페어 구매'] },
+  { k: '브랜드 브랜딩형', pick: '오래 남는 이미지를 쌓을 때', case: '신세계 LOVES THE EARTH', formula: '캐릭터 → 상품 → VMD', slots: ['캐릭터', '상품', 'VMD'], caseRow: ['캠페인 이름 · 캐릭터', '에코 패키지 · 상품', '매장 VMD 확장'], exLabel: '2030', exRow: ['기분 전환 캐릭터', '팝업 굿즈 · 포장', '층마다 같은 캐릭터로 매장 꾸미기'] },
+  { k: '경험형', pick: '고객 고민을 풀어 주며 관계를 맺을 때', case: '롯데 RE:JOICE', formula: '문제 → 공간 → 체험', note: '원본 예시 답안의 순서 · 고객의 문제 → 콘텐츠 → 공간 → 서비스', slots: ['문제', '공간', '체험'], caseRow: ['여성 마음 건강 고민', '상담 카페', '상담 · 문화 서비스'], exLabel: '2030', exRow: ['퇴근 후 가라앉은 기분', '퇴근길 기분 전환 팝업', '향 · 디저트 30분 코스'] },
+  { k: '기업 연합형', pick: '규모와 지속성이 필요할 때', case: '이마트 가플지우', formula: '유통사 + 브랜드 + 공공기관', slots: ['유통사 + 브랜드 + 공공기관', '함께 하는 일', '남는 것'], caseRow: ['이마트 · P&G · 코레일 · 테라사이클', '페트병 공동 수거', 'KTX역 업사이클 벤치'], exLabel: '리빙', exRow: ['롯데 + 입점 리빙 브랜드 + 구청', '헌 쿠션 · 이불 공동 수거', '지역 쉼터 업사이클 소품'] },
+];
+
 /* 국내 대표 리테일 캠페인 5가지 */
 const CASES5 = [
   { co: '롯데백화점', name: 'RE:EARTH', how: '친환경 · 업사이클링 · 플로깅', type: '고객 참여형', md: '캠페인 → 체험 → 상품 판매', flow: ['환경문제 인식', '고객 참여', '체험', '업사이클링 상품', '구매 · 기부'], apply: '뷰티 MD라면 · 공병 가져오기 → 포인트 지급 → 친환경 뷰티 브랜드 팝업 → 상품 구매' },
@@ -737,10 +795,11 @@ const COURSES = {
               { l: '3', a: ['1.5가구', '반려동물 동반 방문 문의 월 1,150건 (+45%)', '혼자 살지만 반려동물과 함께 나올 곳을 찾는다', '반려동물 동반 라운지', '중'] },
             ] },
           { type: 'calc', id: 'sigCheck' },
+          { type: 'typePicker' },
           { type: 'table', id: 'dir', cols: [{ h: '캠페인 방향 정하기' }, { h: '작성란', t: 'area' }],
             rows: [
               { l: '선택한 트렌드 1개와 그 이유', a: ['필코노미 — 두 신호(방문 목적 1위, 평일 저녁 방문 증가)가 같은 고객 상황을 가리키고, 20~30대 신규 유입 목표와 가장 가깝습니다.'] },
-              { l: '캠페인 유형', t: 'pick', opts: TYPE_NAMES, a: ['경험형'] },
+              { l: '캠페인 유형', t: 'pick', opts: TYPE_NAMES, a: ['경험형'], hideInForm: true },
               { l: '벤치마킹 사례와 가져올 요소', a: ["롯데 RE:JOICE — '고객의 문제 → 콘텐츠 → 공간 → 서비스' 순서와, 실제 머무는 공간을 만든 방식"] },
               { l: '연결할 MD 카테고리 · 상품', a: ['뷰티(향 · 핸드케어), F&B(디저트 · 티), 리빙(캔들 · 홈프래그런스), 원데이 클래스'] },
               { l: '캠페인 방향 한 문장', a: ['퇴근 후 기분이 가라앉은 20~30대 직장인이 평일 저녁 30분 만에 기분을 바꾸는 경험형 캠페인으로 신규 회원 5,000명을 확보한다'] },
@@ -2034,7 +2093,7 @@ const GLOSSARY = [
     if (b.type === 'table') {
       const o = off(b);
       const head = `<tr>${b.cols.map((c, ci) => `<th scope="col" class="col-${c.t || 'label'}" id="h-${sid}-${b.id}-${ci}">${esc(c.h)}</th>`).join('')}</tr>`;
-      const body = b.rows.map((row, r) => `<tr>${o ? `<th scope="row">${esc(row.l)}${row.sub ? `<span class="row-sub">${esc(row.sub)}</span>` : ''}</th>` : ''}${b.cols.slice(o).map((col, k) => {
+      const body = b.rows.map((row, r) => (row.hideInForm && !RO) ? '' : `<tr>${o ? `<th scope="row">${esc(row.l)}${row.sub ? `<span class="row-sub">${esc(row.sub)}</span>` : ''}</th>` : ''}${b.cols.slice(o).map((col, k) => {
         const c = k + o;
         if (col.t === 'fixed') return `<td class="col-fixed">${esc(row.fx?.[c - o] || '')}</td>`;
         const { t, opts } = cellType(row, col);
@@ -2047,8 +2106,60 @@ const GLOSSARY = [
       if (RO) { let h = ''; try { h = CALC[b.id](sid, b); } catch (e) { h = '<p class="muted">값이 비어 있습니다.</p>'; } return `<section class="calc"><h4>자동 점검</h4><div class="calc-body">${h}</div></section>`; }
       return `<section class="calc" data-calc="${b.id}" data-i="${i}" aria-live="polite"><h4>자동 점검</h4><div class="calc-body"></div></section>`;
     }
+    if (b.type === 'typePicker') return typePickerHTML(sid);
     if (b.type === 'draft') return RO ? '' : `<div class="draft"><p>앞 워크시트에 적은 내용으로 아래 표의 <b>빈 칸</b>을 채웁니다. 채운 뒤 문장을 다듬으십시오.</p><button type="button" class="btn" data-act="draft">초안 불러오기</button></div>`;
     return '';
+  }
+
+  /* 실습 ① 캠페인 유형 선택 — 인사이트 확인 → 유형 카드 5개(하나만) → 사례 줄과 우리 캠페인 줄 → 참고 예시(정답 아님) */
+  const TYPE_KEY = (sid) => ckey(sid, 'dir', 1, 1);
+  const tpKey = (sid, ti, i) => `${sid}.tp.${ti}.${i}`;
+  function typePickerHTML(sid) {
+    const chosen = val(TYPE_KEY(sid));
+    const ui = state.tp || {};
+    const openK = RO ? chosen : (ui.preview || chosen);
+    const ti = TYPE_PICK.findIndex((t) => t.k === openK);
+    const ins = C('s3', 'ins', 0, 1) || (() => { const b = findBlock('s1', 'sig'); const r = b ? b.rows.findIndex((_, i) => C('s1', 'sig', i, 4) === '강') : -1; return r >= 0 ? C('s1', 'sig', r, 2) : ''; })();
+    if (RO) {
+      if (ti < 0) return '';
+      const t = TYPE_PICK[ti];
+      const ours = t.slots.map((_, i) => val(tpKey(sid, ti, i)));
+      return `<section class="tp tp-ro"><h4>캠페인 유형 · <b>${esc(t.k)}</b> <small>${esc(t.case)} · ${esc(t.formula)}</small></h4>${ours.some(Boolean) ? `<p class="tp-line">${t.slots.map((sl, i) => `<span><em>${esc(sl)}</em>${esc(ours[i] || '—')}</span>`).join('<i>→</i>')}</p>` : ''}</section>`;
+    }
+    const cards = TYPE_PICK.map((t, i) => `<article class="tp-card ${chosen === t.k ? 'sel' : ''} ${openK === t.k ? 'open' : ''}">
+        <span class="tp-no">0${i + 1}</span><h5>${esc(t.k)}</h5>
+        <p class="tp-when"><small>이럴 때 고른다</small>${esc(t.pick)}</p>
+        <div class="tp-btns">
+          <button type="button" class="btn ${chosen === t.k ? '' : 'ghost'}" data-tppick="${esc(t.k)}" aria-pressed="${chosen === t.k}">${chosen === t.k ? '✓ 고른 유형' : '이 유형 고르기'}</button>
+          <button type="button" class="linkish" data-tpview="${esc(t.k)}">참고 사례 보기</button>
+        </div></article>`).join('');
+    let panel = '';
+    if (ti >= 0) {
+      const t = TYPE_PICK[ti];
+      const applied = !!(ui.applied?.[t.k]) || t.slots.some((_, i) => val(tpKey(sid, ti, i)));
+      const showEx = !!(ui.ex?.[t.k]);
+      const head = `<tr><th scope="col"></th>${t.slots.map((sl) => `<th scope="col">${esc(sl)}</th>`).join('')}</tr>`;
+      const caseRow = `<tr class="tp-case"><th scope="row">사례에서는<small>${esc(t.case)} · 참고 사례</small></th>${t.caseRow.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`;
+      const ourRow = applied ? `<tr class="tp-our"><th scope="row">우리 캠페인<small>${esc(state.team || '우리 조')}</small></th>${t.slots.map((sl, i) => { const k = tpKey(sid, ti, i); return `<td><textarea id="f-${k}" data-k="${k}" rows="2" aria-label="우리 캠페인 · ${esc(sl)}" placeholder="${esc(sl)} 칸 — 우리 고객 이야기로">${esc(val(k))}</textarea></td>`; }).join('')}</tr>` : '';
+      const exRow = showEx ? `<tr class="tp-ex"><th scope="row">참고 예시<small>정답이 아니라 참고 예시 · ${esc(t.exLabel)}</small></th>${t.exRow.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>` : '';
+      panel = `<div class="tp-panel">
+        <div class="tp-panel-head"><div><small>${chosen === t.k ? '고른 유형' : '미리 보는 유형'}</small><b>${esc(t.k)}</b></div><div><small>대표 사례</small><b>${esc(t.case)}</b></div><div><small>빌려 올 공식</small><b class="tp-formula">${esc(t.formula)}</b></div></div>
+        ${t.note ? `<p class="tp-note">${esc(t.note)}</p>` : ''}
+        <div class="tbl-wrap"><table class="tp-table"><thead>${head}</thead><tbody>${caseRow}${ourRow}${exRow}</tbody></table></div>
+        <p class="tp-say">사례의 내용을 가져오는 게 아니라 <b>칸의 순서(공식)</b>만 가져옵니다. 칸 이름은 그대로 두고, 칸 안은 우리 고객 이야기로 채우십시오.</p>
+        <div class="tp-actions">
+          ${chosen === t.k ? '' : `<button type="button" class="btn" data-tppick="${esc(t.k)}">이 유형 고르기</button>`}
+          ${applied ? '' : `<button type="button" class="btn ${chosen === t.k ? '' : 'ghost'}" data-act="tpApply" data-type="${esc(t.k)}">우리 캠페인에 적용</button>`}
+          <button type="button" class="btn ghost" data-act="tpEx" data-type="${esc(t.k)}">${showEx ? '참고 예시 숨기기' : '참고 예시 보기'}</button>
+          ${applied && chosen === t.k ? `<button type="button" class="btn ghost" data-act="tpBench" data-type="${esc(t.k)}">"벤치마킹 사례와 가져올 요소" 칸에 넣기</button>` : ''}
+        </div></div>`;
+    }
+    return `<section class="tp">
+      <h4 class="tp-title">캠페인 유형 고르기 <small>유형 → 대표 사례 → 가져올 공식이 한 줄로 이어집니다</small></h4>
+      <p class="tp-ins"><b>우리 고객 인사이트</b>${ins ? esc(ins) : '<span class="muted">실습 ③ 인사이트(또는 위 표에서 "강"으로 고른 신호의 고객 상황)가 여기에 보입니다</span>'}</p>
+      <div class="tp-cards">${cards}</div>
+      ${panel}
+    </section>`;
   }
 
   function whyHTML(sheet) {
@@ -2277,6 +2388,16 @@ const GLOSSARY = [
       </nav>`;
     app.querySelectorAll('textarea').forEach(autosize);
     if (!exMode) runCalcs();
+  }
+
+  /* 유형 선택 영역만 다시 그린다 (다른 칸의 입력 · 스크롤을 건드리지 않게) */
+  function rerenderPicker() {
+    const el = app.querySelector('.tp'); if (!el) { render(); return; }
+    const sid = state.sheet.campaign;
+    const wrap = document.createElement('div'); wrap.innerHTML = typePickerHTML(sid);
+    el.replaceWith(wrap.firstElementChild);
+    app.querySelectorAll('.tp textarea').forEach(autosize);
+    runCalcs(); renderNavLite();
   }
 
   function runCalcs() {
@@ -2878,6 +2999,11 @@ const GLOSSARY = [
     if (t.dataset.view) { state.view = t.dataset.view; save(); render(); goTop(); return; }
     if (t.dataset.sheet) { state.view = 'sheet'; state.sheet[state.course] = t.dataset.sheet; save(); render(); goTop(); return; }
     if (t.dataset.team) { chooseTeam(t.dataset.team); return; }
+    if (t.dataset.tppick) {
+      const sid = state.sheet.campaign; setVal(TYPE_KEY(sid), t.dataset.tppick);
+      state.tp = { ...(state.tp || {}), preview: null }; save(); rerenderPicker(); return;
+    }
+    if (t.dataset.tpview) { state.tp = { ...(state.tp || {}), preview: t.dataset.tpview }; save(); rerenderPicker(); return; }
     if (t.dataset.gstage !== undefined) { state.game.stage = +t.dataset.gstage; state.game.q = -1; save(); renderGame(); return; }
     if (t.dataset.gpick !== undefined) { const g = state.game; g.picked[`${g.stage}.${g.q}`] = +t.dataset.gpick; save(); renderGame(); return; }
     if (t.dataset.cell) { const [tid, sid] = t.dataset.cell.split('|'); state.roomSel = { mode: 'team', tid, sid }; save(); renderRoomView(); $('#roomView').scrollIntoView({ block: 'start' }); return; }
@@ -2885,6 +3011,16 @@ const GLOSSARY = [
     if (t.dataset.course) { state.course = t.dataset.course; state.view = 'sheet'; save(); render(); goTop(); return; }
     const sheet = findSheet(state.sheet[state.course]);
     switch (t.dataset.act) {
+      case 'tpApply': state.tp = { ...(state.tp || {}), applied: { ...(state.tp?.applied || {}), [t.dataset.type]: true } }; save(); rerenderPicker(); app.querySelector('.tp-our textarea')?.focus(); break;
+      case 'tpEx': state.tp = { ...(state.tp || {}), ex: { ...(state.tp?.ex || {}), [t.dataset.type]: !state.tp?.ex?.[t.dataset.type] } }; save(); rerenderPicker(); break;
+      case 'tpBench': {
+        const sid = state.sheet.campaign; const ti = TYPE_PICK.findIndex((x) => x.k === t.dataset.type); const tp = TYPE_PICK[ti];
+        const ours = tp.slots.map((sl, i) => val(tpKey(sid, ti, i)) || sl);
+        const k = ckey(sid, 'dir', 2, 1);
+        setVal(k, `${tp.case} — '${tp.slots.join(' → ')}' 순서를 가져와 우리 캠페인은 ${ours.join(' → ')}`);
+        const el = document.getElementById(`f-${k}`); if (el) { el.value = val(k); autosize(el); }
+        save(); runCalcs(); flash('벤치마킹 칸에 넣었습니다 · 문장을 다듬으십시오'); break;
+      }
       case 'gameGo': state.game.q = 0; save(); renderGame(); break;
       case 'gameNext': {
         const g = state.game, st = GAME[g.stage];
