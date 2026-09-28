@@ -23,7 +23,7 @@
   const ext = (href, text, cls = 'site-chip') => `<a class="${cls}" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${text}<span class="ext" aria-hidden="true">↗</span></a>`;
 
   /* ---------- 상태 ---------- */
-  let state = { view: 'home', course: 'campaign', mission: MISSION, sheet: { campaign: 's1', promo: 'c1' }, team: '', teamId: '', author: '', instructor: false, kw: {}, data: {}, imports: {}, roomSel: { mode: 'round', sid: '' }, game: { stage: 0, q: -1, picked: {} }, localExample: null, resetSeen: '' };
+  let state = { view: 'home', course: 'campaign', mission: MISSION, sheet: { campaign: 's1', promo: 'c1' }, team: '', teamId: '', author: '', instructor: false, kw: {}, data: {}, imports: {}, roomSel: { mode: 'round', sid: '' }, game: { stage: 0, q: -1, picked: {} }, localExample: null, resetSeen: '', joinedAt: '', clearSeen: {} };
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) {
@@ -585,6 +585,7 @@
     else if (state.view === 'case') renderCase();
     else renderSheet();
     renderNav();
+    if (ROOM) updatePresence();
   }
 
   function renderHome() {
@@ -820,7 +821,7 @@
   const ROUNDS = COURSES.campaign.sheets.map((s) => s.id);
   const roundMin = (sid) => COURSES.campaign.sheets.find((s) => s.id === sid)?.min || 30;
   let DB = null, canAdmin = false, control = null, teamsLive = {}, teamUnsub = null, teamsUnsub = null, teamExists = false, syncState = 'off';
-  let writing = Promise.resolve(), flushT = null, controlReady = false;
+  let writing = Promise.resolve(), flushT = null, controlReady = false, announce = false, ROOM = null, peersLive = [], peersT = null, presT = null;
   const pending = {};
   const enc = (k) => k.replace(/\./g, '|');
   const dec = (k) => k.replace(/\|/g, '.');
@@ -864,15 +865,39 @@
     const el = $('#syncState'); if (!el) return;
     el.hidden = st === 'off';
     el.className = `sync sync-${st}`;
-    el.textContent = { ok: '강사방과 연결됨', saving: '저장 중', err: '저장 안 됨 · 권한 확인', ro: '보기 전용 · 작성은 이 브라우저에만' }[st] || '';
+    el.textContent = { ok: '강사방과 연결됨', saving: '저장 중', err: '저장 안 됨 · 권한 확인', ro: '보기 전용 · 강사방에 안 모임 (공유 권한 필요)' }[st] || '';
   }
 
   function chooseTeam(n) {
     if (!n) return;
-    state.teamId = `t${n}`; state.team = `${n}조`;
+    state.teamId = `t${n}`; state.team = `${n}조`; state.joinedAt = new Date().toISOString();
     $('#team').value = state.teamId;
-    save(); subscribeTeam(); render();
-    flash(`${state.team}을 골랐습니다`);
+    announce = true;
+    save(); subscribeTeam(); render(); updatePresence();
+    flash(`${state.team}을 골랐습니다 · 강사방에 입장이 표시됩니다`);
+  }
+  /* 강사가 조를 조 선택 화면으로 돌려보낸다 (control.kick) · 조 기록을 지운다 (control.cleared) */
+  function leaveTeam(msg) {
+    state.teamId = ''; state.team = ''; $('#team').value = '';
+    Object.keys(pending).forEach((k) => delete pending[k]); clearTimeout(flushT);
+    if (state.view === 'sheet') state.view = 'home';
+    save(); subscribeTeam(); render(); updatePresence(); flash(msg);
+  }
+  function applyKick() {
+    const cleared = control?.cleared || {};
+    let wipedMine = false;
+    Object.entries(cleared).forEach(([tid, at]) => {
+      if ((state.clearSeen || {})[tid] === at) return;
+      state.clearSeen = { ...(state.clearSeen || {}), [tid]: at };
+      if (state.data[scopeOf(tid)]) delete state.data[scopeOf(tid)];
+      if (tid === state.teamId && at > (state.joinedAt || '')) wipedMine = true;
+      save();
+    });
+    if (state.instructor || !state.teamId) return false;
+    if (wipedMine) { leaveTeam('강사가 우리 조 기록을 지웠습니다 · 우리 조를 다시 고르십시오'); return true; }
+    const k = control?.kick?.[state.teamId];
+    if (k && k > (state.joinedAt || '')) { leaveTeam('강사가 조 선택 화면으로 돌려보냈습니다 · 우리 조를 다시 고르십시오'); return true; }
+    return false;
   }
 
   function queueSync(k, v) {
@@ -908,6 +933,7 @@
     if (!DB || !state.teamId) return;
     teamUnsub = DB.doc(`teams/${state.teamId}`).onSnapshot((snap) => {
       teamExists = snap.exists;
+      if (announce && controlReady) { announce = false; writing = writing.then(() => writeTeam({ joinedAt: state.joinedAt })).catch(() => {}); if (!snap.exists) return; }
       if (!snap.exists) { if (controlReady && Object.keys(state.data[scopeOf(state.teamId)] || {}).length) writing = writing.then(() => writeTeam({})).catch(() => {}); return; }
       const d = snap.data();
       const remote = decAll(d.missions?.[MISSION]?.data);
@@ -996,7 +1022,7 @@
       const before = control ? JSON.stringify(control) : '';
       const exBefore = control?.example || null;
       control = snap.exists ? snap.data() : null;
-      const wiped = applyReset();
+      const wiped = applyReset() || applyKick();
       if (!controlReady) { controlReady = true; subscribeTeam(); }
       if (!wiped && before === (control ? JSON.stringify(control) : '')) return;
       const exChanged = exBefore !== (control?.example || null);
@@ -1008,6 +1034,60 @@
     }, () => { controlReady = true; subscribeTeam(); });
     if (state.view === 'room') subscribeRoom();
     render();
+    try { ROOM = await claude.use('room'); } catch (e) { ROOM = null; }
+    if (ROOM) {
+      ROOM.onPeers((ch) => {
+        peersLive = ch.peers;
+        clearTimeout(peersT); peersT = setTimeout(() => { if (state.view === 'room') renderPresence(); }, 300);
+      }, () => { ROOM = null; peersLive = []; if (state.view === 'room') renderPresence(); });
+      updatePresence();
+    }
+  }
+  /* 지금 이 앱을 연 기기 — 조 · 작성자 · 보고 있는 화면 (닫으면 플랫폼이 지운다) */
+  function updatePresence() {
+    if (!ROOM) return;
+    const where = state.view === 'sheet' && isCampaign() ? state.sheet.campaign : state.view;
+    ROOM.presence({ role: state.instructor ? 'instructor' : 'team', team: state.teamId || null, author: (state.author || '').slice(0, 20), where, at: state.joinedAt || null }).catch(() => {});
+  }
+  const APP_URL = 'https://claude.ai/artifact/LqX7f24Fz6odBzYPaSJrax';
+  function qrSVG(size) {
+    try { const q = qrcode(0, 'M'); q.addData(APP_URL); q.make(); return q.createSvgTag({ cellSize: size, margin: 2, scalable: true, alt: '실습 앱 입장 QR 코드' }); }
+    catch (e) { return ''; }
+  }
+  const whereLabel = (w) => ROUNDS.includes(w) ? `실습 ${sheetNo(w)}` : { home: '처음 화면', game: '트렌드 게임', case: '케이스 자료', sites: '참고 사이트', room: '강사방' }[w] || '';
+  function renderPresence() {
+    const el = $('#roomPresence'); if (!el) return;
+    const devs = peersLive.filter((p) => p.kind === 'viewer' && p.presence?.role !== 'instructor');
+    const teamIds = Array.from({ length: TEAM_COUNT }, (_, i) => `t${i + 1}`);
+    const slot = (tid) => {
+      const here = devs.filter((p) => p.presence?.team === tid);
+      const doc = teamsLive[tid];
+      const names = [...new Set(here.map((p) => String(p.presence?.author || '').trim()).filter(Boolean))];
+      const wh = [...new Set(here.map((p) => whereLabel(p.presence?.where)).filter(Boolean))];
+      const st = here.length ? 'on' : doc ? 'away' : 'none';
+      return `<article class="pslot ${st}"><h4>${tid.slice(1)}조 <span class="pdot"></span><small>${here.length ? `접속 ${here.length}대` : doc ? '지금 접속 없음 · 기록 있음' : '아직 안 들어옴'}</small></h4>
+        <p>${names.length ? esc(names.join(' · ')) : here.length ? '작성자 이름 미입력' : '&nbsp;'}</p>
+        <p class="muted">${wh.length ? '보는 화면 · ' + esc(wh.join(', ')) : doc?.updatedAt ? '최근 입력 ' + hhmm(doc.updatedAt) : '&nbsp;'}</p>
+        ${canAdmin && DB && (here.length || doc) ? `<div class="pslot-btns"><button type="button" class="linkish" data-act="kickTeam" data-id="${tid}">조 선택으로 돌려보내기</button><button type="button" class="linkish danger" data-act="clearTeam" data-id="${tid}">이 조 기록 지우기</button></div>` : ''}</article>`;
+    };
+    const lobby = devs.filter((p) => !p.presence?.team).length;
+    el.innerHTML = `<div class="presence-head"><h3>입장 현황 <small>${ROOM ? `지금 접속 ${devs.length}대${lobby ? ` · 조 고르는 중 ${lobby}대` : ''}` : '실시간 접속 표시는 공유받아 로그인한 사람에게만 보입니다'}</small></h3></div>
+      <div class="pslots">${teamIds.map(slot).join('')}</div>`;
+  }
+  async function kickTeam(tid, clear) {
+    if (!DB || !canAdmin) { flash('이 앱의 소유자 · 편집자만 할 수 있습니다'); return; }
+    const at = new Date().toISOString();
+    const patch = clear ? { cleared: { ...(control?.cleared || {}), [tid]: at }, kick: { ...(control?.kick || {}), [tid]: at } } : { kick: { ...(control?.kick || {}), [tid]: at } };
+    const next = { round: -1, all: false, endsAt: null, example: null, ...(control || {}), ...patch };
+    try { await DB.doc('control/room').set(next); control = next; }
+    catch (e) { flash('바꿀 권한이 없습니다'); return; }
+    if (clear) {
+      try { await DB.doc(`teams/${tid}`).delete(); delete teamsLive[tid]; } catch (e) { flash('기록을 지우지 못했습니다 · 한 번 더 눌러 주십시오'); return; }
+      if (state.data[scopeOf(tid)]) { delete state.data[scopeOf(tid)]; save(); }
+      state.clearSeen = { ...(state.clearSeen || {}), [tid]: at }; save();
+    }
+    renderRoomBody();
+    flash(clear ? `${tid.slice(1)}조 기록을 지우고 조 선택 화면으로 돌려보냈습니다` : `${tid.slice(1)}조를 조 선택 화면으로 돌려보냈습니다 · 쓴 내용은 남아 있습니다`);
   }
 
   /* 강사방 */
@@ -1037,6 +1117,17 @@
         <p class="lead">조별로 라운드마다 쓴 시트가 이곳에 모입니다. 칸을 누르면 그 조의 시트를 보고, 라운드를 고르면 모든 조의 같은 시트를 나란히 봅니다.</p>
         <p class="room-conn ${DB ? 'on' : 'off'}">${DB ? '실시간 연결됨 · 조가 입력하면 몇 초 안에 반영됩니다' : '실시간 공유가 꺼져 있습니다 · 아래 "제출 코드로 모으기"로 조별 결과를 받으십시오'}</p>
       </header>
+      <section class="join-card">
+        <button type="button" class="join-qr" data-act="qrBig" aria-label="입장 QR 크게 보기">${qrSVG(4)}</button>
+        <div><h3>교육생 입장 QR</h3><p>휴대폰 카메라로 찍으면 이 앱이 열립니다. 조를 고르는 순간 아래 입장 현황과 표에 그 조가 나타나고, 앱을 닫으면 "접속 중" 표시가 사라집니다.</p>
+          <p class="join-url">${APP_URL}</p>
+          <div class="row"><button type="button" class="btn" data-act="qrBig">QR 크게 띄우기</button><button type="button" class="btn ghost" data-act="copyUrl">주소 복사</button></div>
+          <details class="join-help"><summary>교육생 화면에 내용이 안 모일 때 확인할 것</summary>
+            <ol><li>교육생은 claude.ai에 <b>로그인</b>한 상태여야 합니다.</li>
+            <li>이 앱 오른쪽 위 <b>공유</b> 메뉴에서 교육생을 초대하고, 권한을 <b>보기(Viewer)보다 높은 참여 · 편집 권한</b>으로 주어야 조가 쓴 칸이 강사방에 저장됩니다. 보기 권한이면 조 화면 위에 "보기 전용"이 뜨고, 쓴 내용은 그 휴대폰에만 남습니다.</li>
+            <li>로그인 없이 공개 링크로만 연 사람은 입장 현황에 보이지 않고 강사방에도 저장되지 않습니다. 그때는 아래 "제출 코드로 모으기"를 쓰십시오.</li></ol></details></div>
+      </section>
+      <section id="roomPresence" class="room-presence"></section>
       <section id="roomControls" class="room-controls"></section>
       <section id="roomMatrix"></section>
       <section id="roomView" class="room-view"></section>
@@ -1085,6 +1176,7 @@
     }).join('')}</tbody></table></div><p class="legend"><span class="mcell done">✓</span> 제출 <span class="mcell doing">40%</span> 작성 중 <span class="mcell empty">·</span> 아직 없음 — 칸을 누르면 그 조의 시트가 아래에 열립니다</p>`
       : `<div class="empty-room"><b>아직 들어온 조가 없습니다.</b><p>조가 앱에서 우리 조를 고르고 쓰기 시작하면 여기에 한 줄씩 생깁니다.</p></div>`);
     const il = $('#importList');
+    renderPresence();
     if (il) il.innerHTML = Object.values(state.imports).map((t) => `<li>${esc(t.name)} <button type="button" class="linkish" data-act="importDel" data-id="${esc(t.id)}">빼기</button></li>`).join('');
     renderRoomView();
   }
@@ -1333,7 +1425,7 @@
     const kw = e.target.dataset?.kw;
     if (kw) { state.kw[kw] = e.target.value.trim(); const a = $(`#kwgo-${kw}`); if (a) a.href = siteUrl(kw); save(); return; }
     if (e.target.id === 'author') {
-      state.author = e.target.value;
+      state.author = e.target.value; if (ROOM) { clearTimeout(presT); presT = setTimeout(updatePresence, 600); }
       const by = app.querySelector('.byline');
       if (by && state.view === 'sheet' && !showingExample(state.sheet[state.course])) by.innerHTML = `팀명 <u>${esc(state.team) || '&nbsp;'.repeat(14)}</u> 작성자 <u>${esc(state.author) || '&nbsp;'.repeat(14)}</u>`;
       save();
@@ -1453,6 +1545,17 @@
       case 'pptAll': downloadTeams(roomTeams(), t); break;
       case 'pptExample': downloadTeams([{ id: 'ex', name: 'MOOD SHIFT (예시 팀)', author: '강사 예시', mission: MISSION, data: exampleAll() }], t); break;
       case 'importDel': delete state.imports[t.dataset.id]; save(); renderRoomBody(); break;
+      case 'qrBig': {
+        const ov = document.createElement('div'); ov.className = 'qr-over'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', '입장 QR');
+        ov.innerHTML = `<div class="qr-box">${qrSVG(10)}<b>휴대폰 카메라로 찍으십시오</b><p>${APP_URL}</p><p class="muted">claude.ai 로그인 → 우리 조 고르기 → 작성자 이름 쓰기</p><button type="button" class="btn" data-act="qrClose">닫기</button></div>`;
+        document.body.appendChild(ov); ov.querySelector('[data-act="qrClose"]').focus(); break;
+      }
+      case 'qrClose': t.closest('.qr-over')?.remove(); break;
+      case 'copyUrl': navigator.clipboard?.writeText(APP_URL).then(() => flash('주소를 복사했습니다'), () => flash(APP_URL)); break;
+      case 'kickTeam': kickTeam(t.dataset.id, false); break;
+      case 'clearTeam':
+        if (clearArmed !== t.dataset.id) { clearArmed = t.dataset.id; t.textContent = '정말 지웁니다 · 한 번 더'; setTimeout(() => { if (t.isConnected) t.textContent = '이 조 기록 지우기'; if (clearArmed === t.dataset.id) clearArmed = null; }, 4000); break; }
+        clearArmed = null; kickTeam(t.dataset.id, true); break;
     }
   });
 

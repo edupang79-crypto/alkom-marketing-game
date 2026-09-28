@@ -315,6 +315,32 @@ svg.emo .pt.low{fill:var(--pen);stroke:var(--pen)}
 /* 강사방 */
 .room-conn{margin:4px 0 0;font-size:13px;font-weight:700}
 .room-conn.on{color:var(--ok)} .room-conn.off{color:var(--warn)}
+.join-card{display:grid;grid-template-columns:132px 1fr;gap:16px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0;background:var(--sheet)}
+.join-card h3{margin:0 0 4px;font-size:16px}
+.join-card p{margin:0 0 6px;font-size:13.5px}
+.join-qr{border:0;padding:6px;background:#fff;border-radius:8px;cursor:zoom-in;width:132px;height:132px}
+.join-qr svg,.qr-box svg{width:100%;height:auto;display:block}
+.join-url{font-size:12.5px;color:var(--muted);word-break:break-all}
+.join-help{margin-top:8px;font-size:13px}
+.join-help summary{cursor:pointer;font-weight:700}
+.join-help ol{margin:6px 0 0;padding-left:20px;line-height:1.6}
+.qr-over{position:fixed;inset:0;z-index:100;background:rgba(10,14,20,.82);display:grid;place-items:center;padding:16px}
+.qr-box{background:#fff;color:#141C28;border-radius:16px;padding:24px;width:min(460px,100%);text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}
+.qr-box svg{width:min(380px,80vw)}
+.qr-box b{font-size:20px} .qr-box p{margin:0;word-break:break-all;font-size:13px}
+.room-presence{margin:0 0 16px}
+.presence-head h3{margin:0 0 8px;font-size:16px} .presence-head small{font-weight:500;color:var(--muted);font-size:12.5px;margin-left:6px}
+.pslots{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.pslot{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--sheet)}
+.pslot h4{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pslot h4 small{font-weight:500;color:var(--muted);font-size:12px}
+.pslot p{margin:0;font-size:13px;min-height:1.3em}
+.pdot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.pslot.on{border-color:var(--ok)} .pslot.on .pdot{background:var(--ok)}
+.pslot.away .pdot{background:var(--warn)}
+.pslot-btns{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:12.5px}
+.linkish.danger{color:var(--warn)}
+@media (max-width:560px){.join-card{grid-template-columns:1fr}.join-qr{margin:0 auto}}
 .room-controls{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
 .rc-status{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;font-size:15px}
 .round-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px}
