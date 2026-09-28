@@ -1,5 +1,5 @@
 <title>캠페인 실습 노트</title>
-<meta name="description" content="롯데백화점 부산 4개점 캠페인 미션을 골라 실습 ①~⑪ 워크시트를 완성하는 조별 실습 앱">
+<meta name="description" content="롯데백화점 20~30대 신규 고객 확보 캠페인을 트렌드 게임과 가상 데이터로 실습 ①~⑫까지 완성하는 조별 실습 앱">
 <style>
 @font-face{font-family:"Pretendard Variable";font-weight:45 920;font-style:normal;font-display:swap;src:url("__PRETENDARD_SRC__") format("woff2-variations"),url("__PRETENDARD_SRC__") format("woff2")}
 :root{
@@ -374,6 +374,99 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
 .import .row{margin-top:8px}
 .import-list{margin:10px 0 0;padding-left:18px;font-size:13.5px}
 
+/* 왜 하나요 · 인사이트 */
+.why{border:1.5px solid var(--line);border-radius:12px;margin:0 0 22px;background:var(--field);overflow:hidden}
+.why>summary{cursor:pointer;list-style:none;padding:12px 16px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;font-weight:800;font-size:15px}
+.why>summary::-webkit-details-marker{display:none}
+.why>summary::before{content:"▸";color:var(--info);transition:transform .15s}
+.why[open]>summary::before{transform:rotate(90deg)}
+.why>summary small{font-size:12.5px;color:var(--muted);font-weight:600}
+.why-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:14px;padding:0 16px 12px}
+.why h4{margin:0 0 6px;font-size:12.5px;color:var(--info);letter-spacing:.02em}
+.why-main p{margin:0;font-size:14.5px;line-height:1.65}
+.why-ins ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:14px;line-height:1.55}
+.why-next{margin:0;padding:10px 16px;border-top:1px solid var(--line);font-size:14px;background:var(--sheet)}
+.why-next b{color:var(--ok);margin-right:6px}
+/* 예시 보기 */
+.btn-ex{background:var(--hl);border-color:var(--hl);color:var(--hl-ink)}
+.btn.ex-on{background:var(--ink);border-color:var(--ink);color:var(--sheet)}
+.ex-banner{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:12px 16px;border-radius:10px;background:var(--hl);color:var(--hl-ink);margin:0 0 18px}
+.ex-banner b{font-size:15.5px}
+.ex-banner span{font-size:13.5px}
+.blocks.ex-mode .ro{color:var(--ink);font-weight:500}
+.ex-tag{background:var(--hl);color:var(--hl-ink);border-radius:4px;padding:0 5px;font-size:11px;font-weight:800}
+.nav-title small.ex-tag{color:var(--hl-ink)}
+.sheet-table td.col-fixed{background:var(--field);font-weight:700;font-size:14px}
+/* 홈 */
+.flow{list-style:none;margin:0 0 26px;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px}
+.flow li{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;gap:10px;align-items:flex-start}
+.flow-no{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--sheet);display:grid;place-items:center;font-weight:800}
+.flow b{font-size:16px}
+.flow p{margin:4px 0 10px;font-size:13.5px;color:var(--muted)}
+.steps5{list-style:none;margin:0 0 22px;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.steps5 li{border-top:4px solid var(--info);background:var(--field);border-radius:0 0 8px 8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.steps5 span{font-size:11.5px;font-weight:800;color:var(--info)}
+.steps5 b{font-size:15px}
+.steps5 p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.45;flex:1}
+.steps5 em{font-style:normal;font-size:12px;font-weight:800;color:var(--ok);margin-top:4px}
+/* 케이스 자료 */
+.jump{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.jump a{border:1px solid var(--line);border-radius:99px;padding:3px 12px;font-size:13px;font-weight:700;color:var(--info);text-decoration:none;background:var(--sheet)}
+.case-sec{margin-bottom:30px;display:flex;flex-direction:column;gap:10px;scroll-margin-top:90px}
+.case-sec h3{margin:0;font-size:19px;font-weight:800;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+.case-why{margin:0;font-size:14px;padding:8px 12px;background:var(--info-bg);border-radius:8px}
+.case-why b{color:var(--info);margin-right:6px}
+.targets{display:flex;flex-wrap:wrap;gap:8px}
+.targets span{background:var(--ink);color:var(--sheet);border-radius:8px;padding:8px 14px;font-weight:800;font-size:15px}
+.warnline{margin:0;font-weight:700;color:var(--bad)}
+.types{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.types article{border:1px solid var(--line);border-radius:10px;padding:12px}
+.types span{font-size:12px;font-weight:800;color:var(--info)}
+.types h4{margin:2px 0 8px;font-size:17px}
+.types dl{margin:0;display:grid;gap:2px}
+.types dt{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:4px}
+.types dd{margin:0;font-size:13.5px}
+.cases5{display:flex;flex-direction:column;gap:10px}
+.cases5 article{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.cases5 header{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}
+.cases5 header span{font-size:12px;font-weight:800;background:var(--info-bg);color:var(--info);border-radius:99px;padding:1px 10px}
+.cases5 p{margin:0;font-size:13.5px}
+.flowline{font-weight:700}
+.flowline i{font-style:normal;color:var(--muted);margin:0 2px}
+table.facts td.nowrap{white-space:nowrap}
+/* ① 신호 보조 */
+.sigs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.sig{background:var(--sheet);border:1px solid var(--line-soft);border-radius:8px;padding:8px 10px;font-size:13px}
+.sig ul{margin:4px 0 0;padding-left:16px}
+/* 트렌드 게임 */
+.g-stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px;margin-bottom:16px}
+.g-stage{border:1.5px solid var(--line);background:var(--sheet);border-radius:10px;padding:8px 10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:1px;font-weight:700;font-size:13px;color:var(--ink)}
+.g-stage span{font-size:12px;color:var(--info);font-weight:800}
+.g-stage small{font-size:12px;color:var(--muted);font-weight:600}
+.g-stage.cur{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.g-stage.done small{color:var(--ok)}
+.g-card{border:1.5px solid var(--ink);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+.g-eyebrow{margin:0;font-size:12.5px;font-weight:800;color:var(--muted)}
+.g-card h3{margin:0;font-size:22px;font-weight:800;line-height:1.35;letter-spacing:-.02em;text-wrap:balance}
+.g-opts{display:grid;gap:8px}
+.g-opt{border:1.5px solid var(--line);background:var(--sheet);border-radius:10px;padding:12px 14px;text-align:left;font-size:15.5px;font-weight:600;cursor:pointer;color:var(--ink)}
+.g-opt:hover:not([disabled]){border-color:var(--ink)}
+.g-opt.right{border-color:var(--ok);background:var(--ok-bg);color:var(--ok)}
+.g-opt.wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.g-opt.dim{opacity:.5}
+.g-opt[disabled]{cursor:default}
+.g-why{border-radius:10px;padding:12px 14px;background:var(--info-bg)}
+.g-why.ok{background:var(--ok-bg)} .g-why.no{background:var(--warn-bg)}
+.g-why b{display:block;margin-bottom:4px}
+.g-why p{margin:0;font-size:14.5px;line-height:1.65}
+.g-card .row{display:flex;flex-wrap:wrap;gap:8px}
+.takeaways{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.takeaways b{display:block}
+.takeaways span{font-size:14px;color:var(--muted)}
+.glossary{display:flex;flex-direction:column;gap:8px}
+.glossary h3{margin:0;font-size:18px;font-weight:800}
+@media (max-width:700px){.why-grid{grid-template-columns:1fr}}
+
 @media (max-width:900px){
   .top{position:static}
   .wrap{grid-template-columns:minmax(0,1fr);gap:14px;padding-block:12px 48px}
@@ -396,8 +489,7 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
 
 <header class="top">
   <div class="top-in">
-    <div class="brand"><h1>캠페인 실습 노트</h1><small>3-2 캠페인 기획 실습 · 조별 미션</small></div>
-    <button type="button" id="missionChip" class="mission-chip" hidden></button>
+    <div class="brand"><h1>캠페인 실습 노트</h1><small>3-2 캠페인 기획 실습 · 20~30대 신규 고객</small></div>
     <div class="who">
       <label for="team">우리 조<select id="team"></select></label>
       <label for="author">작성자<input id="author" autocomplete="off" placeholder="이름"></label>
@@ -405,10 +497,9 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
     <div id="instructorBar" class="instructor" hidden>
       <span class="tag">강사</span>
       <div class="seg" role="group" aria-label="보기 선택">
-        <button type="button" data-course="campaign" aria-pressed="true">3-2 조별 미션</button>
+        <button type="button" data-course="campaign" aria-pressed="true">3-2 실습</button>
         <button type="button" data-course="promo" aria-pressed="false">3-1 케이스 C 참고</button>
       </div>
-      <button type="button" class="btn btn-pen" data-act="answers" aria-pressed="true"><span>예시 답안 숨기기</span></button>
     </div>
     <span id="syncState" class="sync" role="status" hidden></span>
     <button type="button" id="instrLogin" class="btn ghost" data-act="instrLogin">강사</button>
@@ -417,7 +508,7 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
   <div id="exportPanel" class="export" hidden>
     <div class="box">
       <h3>제출용 복사</h3>
-      <p>①~⑪ 전체를 표 형식 텍스트로 복사하거나, 3-2 원본 시트 모양의 PPT로 내려받습니다.</p>
+      <p>①~⑫ 전체를 표 형식 텍스트로 복사하거나, 3-2 원본 빈 시트 모양의 PPT로 내려받습니다.</p>
       <div class="row"><button type="button" class="btn" data-act="copyText">전체 내용 복사</button><button type="button" class="btn ghost" data-act="pptOwn">원본 시트 PPT 내려받기</button></div>
       <textarea id="copyOut" hidden readonly aria-label="복사할 내용"></textarea>
     </div>
@@ -441,7 +532,7 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
     <div class="case" id="case"></div>
     <span id="overall"></span>
     <ol id="nav"></ol>
-    <p class="side-foot">막대는 칸을 채운 정도입니다. 80% 이상이면 초록색으로 바뀝니다. 미션마다 따로 저장되므로 미션을 바꿔도 작성한 내용은 남습니다.</p>
+    <p class="side-foot">막대는 칸을 채운 정도입니다. 80% 이상이면 초록색으로 바뀝니다. "예시" 표시는 강사가 그 시트의 예시 답안을 보여 주는 중이라는 뜻입니다.</p>
   </aside>
   <main id="main" tabindex="-1">
     <article class="sheet" id="app"></article>
