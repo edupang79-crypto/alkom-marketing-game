@@ -489,6 +489,7 @@ table.matrix .when{font-size:12px;color:var(--muted);font-variant-numeric:tabula
 .import summary{cursor:pointer;font-weight:800}
 .import textarea{margin-top:8px;font-size:12px;min-height:64px}
 .import .row{margin-top:8px}
+.submit .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .import-list{margin:10px 0 0;padding-left:18px;font-size:13.5px}
 
 /* 왜 하나요 · 인사이트 */
@@ -4900,8 +4901,8 @@ const GLOSSARY = [
   function submitHTML(sheet) {
     const d = val(`done.${sheet.id}`);
     return d
-      ? `<p><b class="ok">라운드 ${sheet.no} 제출됨 · ${hhmm(d)}</b> 제출한 뒤에도 고칠 수 있고, 고친 내용도 강사방에 바로 보입니다.</p><button type="button" class="btn ghost" data-act="submit" data-sid="${sheet.id}">다시 제출</button>`
-      : `<p>이 시트를 다 썼으면 제출하십시오. ${DB ? '강사방에 제출 표시가 뜹니다.' : '실시간 공유가 꺼져 있으면 내보내기 · 백업에서 백업 코드를 복사해 강사에게 보냅니다.'}</p><button type="button" class="btn" data-act="submit" data-sid="${sheet.id}">라운드 ${sheet.no} 제출하기</button>`;
+      ? `<p><b class="ok">라운드 ${sheet.no} 제출됨 · ${hhmm(d)}</b> 제출한 뒤에도 고칠 수 있고, 고친 내용도 강사방에 바로 보입니다. 제출할 때마다 우리 조 PPT(원본 시트 모양)가 함께 내려받아집니다.</p><div class="row"><button type="button" class="btn ghost" data-act="pptOwn">우리 조 PPT 받기</button><button type="button" class="btn ghost" data-act="submit" data-sid="${sheet.id}">다시 제출</button></div>`
+      : `<p>이 시트를 다 썼으면 제출하십시오. ${DB ? '강사방에 제출 표시가 뜨고, 우리 조 PPT가 이 기기에 내려받아집니다.' : '실시간 공유가 꺼져 있으면 내보내기 · 백업에서 백업 코드를 복사해 강사에게 보냅니다.'}</p><button type="button" class="btn" data-act="submit" data-sid="${sheet.id}">라운드 ${sheet.no} 제출하기</button>`;
   }
   function tickTimers() {
     const r = remaining();
@@ -5564,6 +5565,8 @@ const GLOSSARY = [
         setVal(`done.${sid}`, new Date().toISOString()); save();
         $('#submitBox').innerHTML = submitHTML(findSheet(sid)); renderNav();
         flash(DB ? '제출했습니다 · 강사방에 표시됩니다' : '제출 표시를 했습니다 · 내보내기에서 백업 코드를 복사해 강사에게 보내십시오');
+        /* 제출하면 우리 조 PPT도 이 기기에 내려받는다 (지금까지 쓴 시트가 모두 채워진 원본 시트 모양) */
+        if (state.teamId && isCampaign()) downloadTeams([ownTeam()], $('#submitBox [data-act="pptOwn"]'));
         break;
       }
       case 'roundStart': setControl({ round: ROUNDS.indexOf(t.dataset.sid), all: false, example: null, endsAt: new Date(Date.now() + roundMin(t.dataset.sid) * 60000).toISOString() }); break;
