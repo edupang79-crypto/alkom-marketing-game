@@ -4753,7 +4753,8 @@ const GLOSSARY = [
   function toggleExample(sid) {
     const on = !(control?.example === sid || state.localExample === sid);
     if (DB && isAdmin()) { setControl({ example: on ? sid : null }); state.localExample = null; }
-    else { state.localExample = on ? sid : null; flash(on ? '이 화면에서 예시를 보여 줍니다 · 조 화면까지 보내려면 앱 소유자 계정으로 누르십시오' : '예시를 닫았습니다'); }
+    else if (!state.instructor) { if (!on && control?.example === sid) { flash('강사가 예시를 보여 주는 중입니다 · 강사가 닫으면 작성 칸으로 돌아갑니다'); return; } state.localExample = on ? sid : null; flash(on ? '예시 답안을 보여 줍니다 · 우리 조가 쓴 내용은 그대로 있습니다' : '예시를 닫았습니다 · 작성 칸으로 돌아갑니다'); }
+    else { state.localExample = on ? sid : null; flash(on ? (DB ? '이 화면에서 예시를 보여 줍니다 · 조 화면까지 보내려면 앱 소유자 계정으로 누르십시오' : '이 화면에서 예시를 보여 줍니다 · 교육생도 각자 시트의 "예시 답안 보기"로 볼 수 있습니다') : '예시를 닫았습니다'); }
     save(); render();
   }
 
@@ -4772,7 +4773,7 @@ const GLOSSARY = [
       viewCtx = { data: exampleData(sheet) }; RO = true;
       try { blocksHTML = sheet.blocks.map((b, i) => renderBlock(sheet, b, i)).join(''); } finally { [viewCtx, RO] = prevCtx; }
     } else blocksHTML = sheet.blocks.map((b, i) => renderBlock(sheet, b, i)).join('');
-    const exBanner = exMode && isCampaign() ? `<div class="ex-banner"><b>강사 예시 답안 · 예시 팀 MOOD SHIFT</b><span>우리 조가 쓴 내용은 그대로 있습니다. ${state.instructor ? '다시 누르면 조 화면이 작성 칸으로 돌아갑니다.' : '강사가 예시를 닫으면 작성 칸으로 돌아갑니다.'}</span></div>` : '';
+    const exBanner = exMode && isCampaign() ? `<div class="ex-banner"><b>강사 예시 답안 · 예시 팀 MOOD SHIFT</b><span>우리 조가 쓴 내용은 그대로 있습니다. ${state.instructor ? '다시 누르면 조 화면이 작성 칸으로 돌아갑니다.' : control?.example === sheet.id ? '강사가 예시를 닫으면 작성 칸으로 돌아갑니다.' : '"예시 닫기"를 누르면 작성 칸으로 돌아갑니다.'}</span></div>` : '';
     app.innerHTML = `
       <header class="sheet-head">
         <p class="sheet-eyebrow">실습 ${sheet.no}${sheet.min ? ` · ${sheet.min}분` : ''}</p>
@@ -4784,6 +4785,9 @@ const GLOSSARY = [
         ${state.instructor && isCampaign() ? `<div class="sheet-tools">
           <button type="button" class="btn ${exMode ? 'ex-on' : 'btn-ex'}" data-act="example" data-sid="${sheet.id}">${exMode ? '예시 닫기 · 다시 쓰기' : '예시 답안 보여 주기'}</button>
           ${exMode ? '' : '<button type="button" class="btn ghost" data-act="fill">이 시트에 예시 답안 채우기</button><button type="button" class="btn ghost danger" data-act="clear">이 시트 비우기</button>'}
+        </div>` : isCampaign() ? `<div class="sheet-tools">
+          <button type="button" class="btn ${exMode ? 'ex-on' : 'btn-ex'}" data-act="example" data-sid="${sheet.id}">${exMode ? '예시 닫기 · 다시 쓰기' : '예시 답안 보기'}</button>
+          ${exMode ? '' : '<span class="muted">먼저 써 본 뒤 예시 팀 답안과 비교해 보십시오</span>'}
         </div>` : ''}
       </header>
       ${whyHTML(sheet)}
